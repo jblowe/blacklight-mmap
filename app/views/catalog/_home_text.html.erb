@@ -1,0 +1,42 @@
+<style>
+    .grid {
+        padding: 12px;
+    }
+
+    .card:hover {
+        /* https://tobiasahlin.com/blog/how-to-animate-box-shadow */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: box-shadow 0.3s ease-in-out;
+    }
+</style>
+<table>
+    <tr class="grid">
+        <td colspan=5>
+            <h3 style="margin-top: 15px; font-size: 1.2em" class='section-heading'>Explore the MMAP database!</h3>
+            <p style="text-align: justify; font-size: 85%; line-height: 1.3em;">
+                This website provides a means to "slice-and-dice" some of the myriad data elements
+                of the MMAP project.
+            </p>
+            <p style="font-size: 0.8em"><b>This is a work in progress! Caveat utilizator!</b></p>
+            This search engine allows you to frolic in the fields of the MMAP data.
+            <ul>
+                <li>Artifacts</li>
+            </ul>
+            <p>... and combinations of the above</p>
+            <h3 style="margin-top: 15px; font-size: 1.2em" class='section-heading'>How it works</h3>
+            <p>
+                What we have done is combined records from the the various tables together using a common key,
+		to wit, the Artifact number.
+            </p>
+            <p>
+                The diagram below schematizes how this works. </p>
+            <p>
+                A bit of pipeline plumbing does the merging described above and the results are fed into Solr.
+                Solr presents the data using a basic keyword search box (at the top) and, more marvelously,
+                arranging many of the fields in "facets" at the left. The user can use these in combination to
+                generate a search result containing the desired information.
+            </p>
+             <hr/>
+        </td>
+    </tr>
+</table>

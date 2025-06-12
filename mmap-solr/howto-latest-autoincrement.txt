@@ -1,0 +1,22 @@
+cd ~/Documents/Consulting/MMAP
+# tweak the exported dump
+perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE( PRECISION)?/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;' MMBC_for_Postgres\ 5-10-25.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
+# test it locally, make sure it loads.
+psql -c "drop database mmap;"
+psql -c "create database mmap;"
+# recreate mmap on do
+rm -f nohup.out ; nohup psql -d mmap < mmap.sql 
+psql "postgresql:<get the correct string from mmap staff>"
+nohup psql "postgresql:<get the correct string from mmap staff>" < mmap.sql > mmap-do.log
+diff mmap-do.log mmap.log
+# reapply autoincrement and sequence start
+nohup psql "postgresql:<get the correct string from mmap staff>"  -c "\dt+" > mmap-tables-as-of-2025-05-10.txt
+psql "postgresql:<get the correct string from mmap staff>" -c "\d+ public.*" > mmap-schema-as-of-2025-05-10.txt
+grep btree mmap-schema-as-of-2025-05-10.txt | grep PRIMARY > auto.txt
+perl -pe 's/ PRIMARY KEY, btree \(/ ALTER /;s/^\ +/ALTER TABLE /;s/\)$/ ADD GENERATED ALWAYS AS IDENTITY;/;s/_pkey//;' auto.txt > auto2.txt
+mv auto2.txt mmap-schema-autoincrement-update.sql
+nohup time psql "postgresql:<get the correct string from mmap staff>" -f mmap-schema-autoincrement-update.sql &
+mv nohup.out mmap-schema-autoincrement-update.log
+perl -pe "s/^ *(.*?)_pkey\" PRIMARY KEY, btree \((.*?)\)/SELECT SETVAL('\1_\2_seq\"', (SELECT MAX(\2) FROM \1\"));/;s/_\"/_/;s/\"_/_/;" auto.txt > set_increment.sql
+mv set_increment.sql mmap-setval-start.sql
+nohup time psql "postgresql:<get the correct string from mmap staff>" -f mmap-setval-start.sql > mmap-setval-start.log &

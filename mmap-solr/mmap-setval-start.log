@@ -1,0 +1,560 @@
+ setval 
+--------
+    254
+(1 row)
+
+ setval 
+--------
+    192
+(1 row)
+
+ setval 
+--------
+   3190
+(1 row)
+
+ setval 
+--------
+     85
+(1 row)
+
+ setval 
+--------
+      5
+(1 row)
+
+ setval 
+--------
+   1160
+(1 row)
+
+ setval 
+--------
+   6228
+(1 row)
+
+ setval 
+--------
+  17410
+(1 row)
+
+ setval 
+--------
+    395
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+ setval 
+--------
+    103
+(1 row)
+
+ setval 
+--------
+    391
+(1 row)
+
+ setval 
+--------
+    895
+(1 row)
+
+ setval 
+--------
+   7531
+(1 row)
+
+ setval 
+--------
+    103
+(1 row)
+
+ setval 
+--------
+    229
+(1 row)
+
+ setval 
+--------
+     12
+(1 row)
+
+ setval 
+--------
+     67
+(1 row)
+
+psql:mmap-setval-start.sql:19: ERROR:  relation "tblDubious_SuspectSites_Primary_Site_Image_tblDubious_SuspectSi" does not exist
+LINE 1: SELECT SETVAL('"tblDubious_SuspectSites_Primary_Site_Image_t...
+                      ^
+ setval 
+--------
+     56
+(1 row)
+
+ setval 
+--------
+     86
+(1 row)
+
+ setval 
+--------
+    147
+(1 row)
+
+ setval 
+--------
+     54
+(1 row)
+
+ setval 
+--------
+     15
+(1 row)
+
+ setval 
+--------
+     27
+(1 row)
+
+ setval 
+--------
+   7532
+(1 row)
+
+ setval 
+--------
+    177
+(1 row)
+
+ setval 
+--------
+    176
+(1 row)
+
+ setval 
+--------
+    176
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+ setval 
+--------
+    243
+(1 row)
+
+ setval 
+--------
+     22
+(1 row)
+
+ setval 
+--------
+     63
+(1 row)
+
+ setval 
+--------
+     15
+(1 row)
+
+ setval 
+--------
+    119
+(1 row)
+
+ setval 
+--------
+    114
+(1 row)
+
+ setval 
+--------
+     22
+(1 row)
+
+ setval 
+--------
+    155
+(1 row)
+
+ setval 
+--------
+    215
+(1 row)
+
+ setval 
+--------
+    102
+(1 row)
+
+psql:mmap-setval-start.sql:41: ERROR:  function setval(unknown, real) does not exist
+LINE 1: SELECT SETVAL('"tblPMs_Record_No_seq"', (SELECT MAX("Record_...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ setval 
+--------
+    750
+(1 row)
+
+ setval 
+--------
+    130
+(1 row)
+
+ setval 
+--------
+    107
+(1 row)
+
+ setval 
+--------
+    572
+(1 row)
+
+ setval 
+--------
+  14830
+(1 row)
+
+ setval 
+--------
+    570
+(1 row)
+
+ setval 
+--------
+   4738
+(1 row)
+
+ setval 
+--------
+      5
+(1 row)
+
+ setval 
+--------
+    143
+(1 row)
+
+ setval 
+--------
+    485
+(1 row)
+
+ setval 
+--------
+    293
+(1 row)
+
+ setval 
+--------
+   1065
+(1 row)
+
+psql:mmap-setval-start.sql:54: ERROR:  function setval(unknown, text) does not exist
+LINE 1: SELECT SETVAL('"tblSite_Vill_Name_seq"', (SELECT MAX("Vill_N...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ setval 
+--------
+     16
+(1 row)
+
+ setval 
+--------
+     21
+(1 row)
+
+ setval 
+--------
+     27
+(1 row)
+
+ setval 
+--------
+     59
+(1 row)
+
+ setval 
+--------
+     35
+(1 row)
+
+ setval 
+--------
+     21
+(1 row)
+
+ setval 
+--------
+     58
+(1 row)
+
+ setval 
+--------
+    291
+(1 row)
+
+ setval 
+--------
+    270
+(1 row)
+
+ setval 
+--------
+  11362
+(1 row)
+
+ setval 
+--------
+    317
+(1 row)
+
+ setval 
+--------
+    146
+(1 row)
+
+ setval 
+--------
+     59
+(1 row)
+
+ setval 
+--------
+    186
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+psql:mmap-setval-start.sql:71: ERROR:  function setval(unknown, real) does not exist
+LINE 1: SELECT SETVAL('"zLU_Perf_Record_No_seq"', (SELECT MAX("Recor...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ setval 
+--------
+     16
+(1 row)
+
+ setval 
+--------
+     10
+(1 row)
+
+ setval 
+--------
+     30
+(1 row)
+
+ setval 
+--------
+     23
+(1 row)
+
+psql:mmap-setval-start.sql:76: ERROR:  function setval(unknown, real) does not exist
+LINE 1: SELECT SETVAL('"zLU_tblAppProf_Record_No_seq"', (SELECT MAX(...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ setval 
+--------
+     34
+(1 row)
+
+ setval 
+--------
+      8
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+      5
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+     14
+(1 row)
+
+ setval 
+--------
+     10
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+      3
+(1 row)
+
+ setval 
+--------
+     31
+(1 row)
+
+ setval 
+--------
+     15
+(1 row)
+
+ setval 
+--------
+     50
+(1 row)
+
+ setval 
+--------
+    102
+(1 row)
+
+ setval 
+--------
+      3
+(1 row)
+
+ setval 
+--------
+     33
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+     26
+(1 row)
+
+ setval 
+--------
+     11
+(1 row)
+
+ setval 
+--------
+      7
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+     10
+(1 row)
+
+ setval 
+--------
+     11
+(1 row)
+
+ setval 
+--------
+      2
+(1 row)
+
+ setval 
+--------
+      3
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+ setval 
+--------
+      3
+(1 row)
+
+ setval 
+--------
+    166
+(1 row)
+
+ setval 
+--------
+     30
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+     23
+(1 row)
+
+ setval 
+--------
+     15
+(1 row)
+
+ setval 
+--------
+      3
+(1 row)
+
+ setval 
+--------
+      6
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+ setval 
+--------
+      4
+(1 row)
+
+       10.34 real         0.03 user         0.03 sys

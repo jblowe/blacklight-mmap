@@ -1,0 +1,50 @@
+Column
+Id
+Mmap Artifact Id
+Site Name
+Date Discovered
+Bag Id
+Artifact Condition
+Artifact Class
+Maximum Dimension
+Weight
+Count
+Burial No
+Period
+Material
+Comments
+Bur Phase
+Level
+Depcontext
+Square
+Quad
+Layer
+Feano
+Featype
+Burassoc
+Blocation
+Bodypart
+Sherdample? S
+Sherdamp Location S
+Thinection S
+Ts Location
+Ts No
+Metample S
+Metamp Loc S
+Sample Comment
+Artloc
+Conserved
+Glassample S
+Glamp S
+Gl Tech
+Gl Analy Date
+Entered By
+Initial Date
+Date Last Modified
+Txtimagename1
+Txtimagename2
+Txtimagename3
+Txtimagename4
+Txtimagename5
+Txtdrawingname
+Flag For Check

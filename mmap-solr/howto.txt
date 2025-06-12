@@ -1,0 +1,41 @@
+perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;' MMBC_fe\ _be\ for\ Sasha.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
+rm nohup.out ; nohup psql -d mmap < mmap.sql 
+psql "postgresql:<get the correct string from mmap staff>" -c 'select * from "tblArtifact_Master"' > x
+vi mmap-public.fields.txt
+./solrETL-public.sh mmap
+cut -f1 4solr.fields.mmap.public.counts.csv > solr-fields.txt\nperl -pe 's/_ss?//;s/_/ /g;s/(\w+\S*\w*)/\u\L$1/g;' solr-fields.txt > labels\npaste labels solr-fields.txt | perl -pe "s/^(.*?)\t(.*)$/    ('\1', '\2'),/" > solr-config.py\n
+perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;' MMBC_for_Postgres.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
+perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE( PRECISION)?/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;' MMBC_for_Postgres.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
+psql "postgresql:<get the correct string from mmap staff>"
+nohup psql "postgresql:<get the correct string from mmap staff>" < mmap.sql > mmap.log
+nohup psql "postgresql:<get the correct string from mmap staff>" < mmap-schema-autoincrement-update.sql > mmap-schema-autoincrement-update.log
+psql "postgresql:<get the correct string from mmap staff>" -c "\dt" > mmap-tables.txt
+psql "postgresql:<get the correct string from mmap staff>" -c "\dt" > mmap-tables.txt
+cut -c11-53 mmap-tables.txt > x
+mv x mmap-tables.txt
+psql "postgresql:<get the correct string from mmap staff>" -c "\ds" > mmap-seq.txt
+cut -c11-74 mmap-seq.txt > x
+mv x mmap-seq.txt
+paste mmap-seq.txt mmap-seq.txt > x
+paste mmap-seq.txt part1 part2 | perl -pe "s/ //g;s/^/SELECT SETVAL('/;s/\t/', (SELECT MAX('/;s/\t/') FROM \"/;s/$/\"));/" > mmap-setval-start.sql
+rm -f nohup.out ; nohup psql "postgresql:<get the correct string from mmap staff>" -f mmap-setval-start.sql
+psql "postgresql:<get the correct string from mmap staff>" -c "\d" > m.txt
+cd ~/Documents/Consulting/MMAP
+perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE( PRECISION)?/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;' MMBC_for_Postgres\ 5-10-25.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
+nohup psql "postgresql:<get the correct string from mmap staff>" < mmap.sql > mmap-do.log
+nohup psql "postgresql:<get the correct string from mmap staff>" -c "\ds" > mmap-seq.txt
+nohup psql "postgresql:<get the correct string from mmap staff>"  -c "\ds" > mmap-seq.txt
+nohup psql "postgresql:<get the correct string from mmap staff>"  -c "\dt+" > mmap-schema-as-of-2025-05-10.txt
+psql "postgresql:<get the correct string from mmap staff>" -c "\ds+" > mmap-seq2.txt
+nohup time psql "postgresql:<get the correct string from mmap staff>" -f mmap-schema-autoincrement-update.sql &
+nohup time psql "postgresql:<get the correct string from mmap staff>" -f mmap-setval-start.sql > mmap-setval-start.log2 &
+mv nohup.out mmap-schema-autoincrement-update.log
+psql -d mmap -c "\d+ public.*" > mmap-schema-as-of-2025-05-10.txt
+psql "postgresql:<get the correct string from mmap staff>" -c "\d+ public.*" > xxxx
+mv xxxx mmap-schema-as-of-2025-05-10.txt
+cut -f 43-48 4solr.mmap.public.csv| perl -pe 's/Q:/\nQ:/g' | tail -n +2 | sort | uniq -c | sort -rn | less
+cp config.py config-mmap.py
+psql "postgresql:<get the correct string from mmap staff>"
+psql "postgresql:<get the correct string from mmap staff>" -f tblSite.sql
+psql "postgresql:<get the correct string from mmap staff>" -f pgadmin-create-user.sql
+grep '|' mmap-schema-as-of-2025-05-10.txt| cut -f2 -d"|" | perl -pe 's/ //g;' | sort | uniq -c | sort -rn | head -30

@@ -1,0 +1,26 @@
+SELECT am.*,
+  j19."Record_ID",
+  j19."Corrosion",
+  j19."InCatalog",
+  j19."Elemental",
+  j19."Sampled",
+  j19."HardnessRange",
+  j19."HardTest",
+  j19."Type",
+  j19."OrigLen",
+  j19."OrigWid",
+  j19."InnerRad",
+  j19."InnerLength",
+  j19."ChordLen",
+  j19."ChordHt",
+  j19."OuterLength",
+  j19."BladeLength",
+  j19."MaxBladeWid",
+  j19."AvgBladeWid",
+  j19."BladeThick",
+  j19."CurvedBlShape",
+  j19."UnclassBlShape",
+  j19."Tang"
+FROM "tblArtifact_Master" am
+
+JOIN "tblMetalBlades" j19 ON j19."MMAP_Artifact_ID" = am."MMAP_Artifact_ID";

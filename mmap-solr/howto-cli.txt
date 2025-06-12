@@ -1,0 +1,50 @@
+-- various commands, more or less in sequences used to migrate and configure the mmap* databases
+--  these can be referred, and reused if needed. but caveat lector.
+ALTER DATABASE mmap OWNER TO elizabeth;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO joyce;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO elizabeth;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO sasha;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO jb;
+SELECT SETVAL('"AllDrawings_ID_seq"', (SELECT MAX("ID") FROM "AllDrawings"));
+ALTER DATABASE mmap OWNER TO elizabeth;
+ALTER DATABASE mmap_dev OWNER TO elizabeth;
+ALTER DATABASE mmap_backup OWNER TO elizabeth;
+ALTER TABLE public.* OWNER TO elizabeth;
+select * from pg_stat_activity where state='idle'; 
+ALTER TABLE "tblArtifact_Master" DROP CONSTRAINT "tblArtifact_Master_pkey";
+CREATE UNIQUE INDEX "tblArtifact_Master_Record_No"  ON "tblArtifact_Master"  ("Record_No");
+ALTER TABLE "tblArtifact_Master" ADD PRIMARY KEY USING INDEX "tblArtifact_Master_pkey";
+\d+ "tblArtifact_Master"
+--
+-- reseting 'sequence' properties
+ALTER TABLE "tblArtifact_Master" ALTER COLUMN "Record_No" SET NOT NULL;
+CREATE UNIQUE INDEX "tblArtifact_Master_pkey"  ON "tblArtifact_Master"  ("Record_No");
+ALTER TABLE "tblArtifact_Master" ADD PRIMARY KEY USING INDEX "tblArtifact_Master_pkey";
+DROP SEQUENCE "tblArtifact_Master_MMAP_Artifact_ID_seq";
+ALTER TABLE "tblArtifact_Master" ALTER "Record_No" ADD GENERATED ALWAYS AS IDENTITY;
+SELECT SETVAL('"tblArtifact_Master_Record_No_seq"', (SELECT MAX("Record_No") FROM "tblArtifact_Master"));
+-- 1. Dropping the original primary key
+ALTER TABLE "tblArtifact_Master" DROP CONSTRAINT "tblArtifact_Master_pkey";
+-- 2. Create index on Record_No 
+CREATE UNIQUE INDEX "tblArtifact_Master_Record_No"  ON "tblArtifact_Master"  ("Record_No");
+ALTER TABLE "tblArtifact_Master" ALTER COLUMN "Record_No" SET NOT NULL; 
+CREATE UNIQUE INDEX "tblArtifact_Master_pkey"  ON "tblArtifact_Master"  ("Record_No");
+-- 3. Creating new primary key using existing index for Record_No
+ALTER TABLE "tblArtifact_Master" ADD PRIMARY KEY USING INDEX "tblArtifact_Master_pkey";
+-- 4. Set up autoincrement and set the start value based on the highest value
+ALTER TABLE "tblArtifact_Master" ALTER "Record_No" ADD GENERATED ALWAYS AS IDENTITY;
+SELECT SETVAL('"tblArtifact_Master_Record_No_seq"', (SELECT MAX("Record_No") FROM "tblArtifact_Master"));
+-- 5. You can drop the original sequence generator if you won't need it 
+DROP SEQUENCE "tblArtifact_Master_MMAP_Artifact_ID_seq";
+ALTER TABLE "tblArtifact_Master" ALTER COLUMN "Record_No" SET NOT NULL;
+-- 1. Dropping the original primary key
+ALTER TABLE "tblArtifact_Master" DROP CONSTRAINT "tblArtifact_Master_pkey";
+-- 2. Create index on Record_No
+SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'mmap';
+drop database mmap;
+SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'mmap_dev';
+drop database mmap_dev;
+create database mmap_dev with template mmap owner elizabeth;
+create database mmap_backup with template mmap owner elizabeth;
+drop database mmap_backup;
+create database mmap_backup with template mmap owner elizabeth;

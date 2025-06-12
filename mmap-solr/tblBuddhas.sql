@@ -1,0 +1,28 @@
+SELECT am.*,
+  j5."Height",
+  j5."Width",
+  j5."Depth",
+  j5."Primary_Material",
+  j5."Secondary_Materials",
+  j5."Age",
+  j5."Body Position",
+  j5."Standing_Positions",
+  j5."Sitting_Positions",
+  j5."Reclining_Positions",
+  j5."Other_Positions",
+  j5."Style",
+  j5."Base",
+  j5."Lower_body",
+  j5."Upper_body",
+  j5."Arms",
+  j5."Hands",
+  j5."Head",
+  j5."Crown",
+  j5."Other_elements",
+  j5."Inscription",
+  j5."Decoration",
+  j5."Description",
+  j5."Date_of_Initial_Entry"
+FROM "tblArtifact_Master" am
+
+JOIN "tblBuddhas" j5 ON j5."MMAP_Artifact_ID" = am."MMAP_Artifact_ID";

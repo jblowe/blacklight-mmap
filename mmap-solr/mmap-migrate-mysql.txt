@@ -1,0 +1,43 @@
+# in terminal window
+mysql -u root
+
+# only mysql system databases...
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+6 rows in set (0.00 sec)
+
+# have to create the database first
+mysql> create database mmap;
+Query OK, 1 row affected (0.01 sec)
+
+# control-d to get out
+mysql> ^DBye
+
+# load the db from sql "dump"
+% mysql -u root -D mmap < MMBC_fe_be_for_Sasha_mysql.sql
+% mysql -u root                                             
+mysql> use mmap;
+
+Database changed
+
+# check things out. select some records
+mysql> select count(*) from tblArtifact_Master;
++----------+
+| count(*) |
++----------+
+|    16352 |
++----------+
+1 row in set (0.04 sec)
+
+mysql> select * from tblArtifact_Master limit 3;
++-----------+------------------+---------------+-----------------+---------+--------------------+-----------------+-------------------+-------------------+-------+-----------+--------+----------+----------+-----------+-------+------------+--------+------+-------+-------+---------+----------+-----------+----------+---------------+---------------------+--------------+--------------+-------+------------+--------------+----------------+--------+-----------+--------------+---------+---------+---------------+------------+---------------------+---------------------+----------------------------------------------------------------------------+----------------------------------------------------------------------------+---------------+---------------+---------------+--------------------------------------------------------------------+----------------+
+| Record_No | MMAP_Artifact_ID | Site_Name     | Date_Discovered | Bag_ID  | Artifact_Condition | Artifact_Class  | Maximum_Dimension | Weight            | Count | Burial_No | Period | Material | Comments | Bur_Phase | Level | DepContext | Square | Quad | Layer | FeaNo | FeaType | BurAssoc | BLocation | BodyPart | Sherd_Sample? | Sherd_Samp_Location | Thin_Section | TS_Location  | TS_No | Met_Sample | Met_Samp_Loc | Sample_Comment | ArtLoc | Conserved | Glass_Sample | Gl_Samp | Gl_Tech | Gl_Analy_Date | Entered_By | Initial_Date        | Date_Last_Modified  | txtImageName1                                                              | txtImageName2                                                              | txtImageName3 | txtImageName4 | txtImageName5 | txtDrawingName                                                     | Flag_for_Check |
+
+[snip]
