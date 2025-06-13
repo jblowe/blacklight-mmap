@@ -1,5 +1,5 @@
 #!/bin/bash -x
-source tables.sh
+source export_tables.sh
 
 # run the sql extract for each of the subtables.
 # (sql created by crosswalk.py)
