@@ -93,27 +93,27 @@ class CatalogController < ApplicationController
     config.add_search_field 'text', label: 'Any field'
 
     [
-       ['mmap_artifact_id_s'     'Artifact Id'],
-       ['site_name_s'     'Site Name'],
-       ['date_discovered_s'     'Date Discovered'],
-       ['bag_id_s'     'Bag Id'],
-       ['artifact_condition_s'     'Artifact Condition'],
-       ['artifact_class_s'     'Artifact Class'],
-       ['maximum_dimension_s'     'Maximum Dimension'],
-       ['weight_s'     'Weight'],
-       ['count_s'     'Count'],
-       ['burial_no_s'     'Burial No'],
-       ['period_s'     'Period'],
-       ['material_s'     'Material'],
-       ['comments_s'     'Comments'],
-       ['bur_phase_s'     'Bur Phase'],
-       ['level_s'     'Level'],
-       ['depcontext_s'     'Depcontext'],
-       ['square_s'     'Square'],
-       ['quad_s'     'Quad'],
-       ['layer_s'     'Layer'],
-       ['feano_s'     'Feano'],
-       ['featype_s'     'Featype']
+       ['mmap_artifact_id_s' , 'Artifact Id'],
+       ['site_name_s' , 'Site Name'],
+       ['date_discovered_s' , 'Date Discovered'],
+       ['bag_id_s' , 'Bag Id'],
+       ['artifact_condition_s' , 'Artifact Condition'],
+       ['artifact_class_s' , 'Artifact Class'],
+       ['maximum_dimension_s' , 'Maximum Dimension'],
+       ['weight_s' , 'Weight'],
+       ['count_s' , 'Count'],
+       ['burial_no_s' , 'Burial No'],
+       ['period_s' , 'Period'],
+       ['material_s' , 'Material'],
+       ['comments_s' , 'Comments'],
+       ['bur_phase_s' , 'Bur Phase'],
+       ['level_s' , 'Level'],
+       ['depcontext_s' , 'Depcontext'],
+       ['square_s' , 'Square'],
+       ['quad_s' , 'Quad'],
+       ['layer_s' , 'Layer'],
+       ['feano_s' , 'Feano'],
+       ['featype_s' , 'Featype']
       ].each do |search_field|
       config.add_search_field(search_field[0]) do |field|
         field.label = search_field[1]
