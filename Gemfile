@@ -70,7 +70,7 @@ group :test do
   gem "selenium-webdriver"
 
 end
-gem "blacklight", ">= 7.0"
+gem "blacklight", "~> 8.1.0"
 
 group :development, :test do
   gem "solr_wrapper", ">= 0.3"
@@ -82,4 +82,6 @@ gem "devise"
 gem "devise-guests", "~> 0.8"
 gem "blacklight-marc", "~> 8.0"
 gem "openseadragon", ">= 0.2.0"
+gem "base64", "0.3.0"
+gem 'concurrent-ruby', '1.3.4'
 gem "blacklight-gallery"
