@@ -74,11 +74,11 @@ class CatalogController < ApplicationController
     # solr field configuration for search results/index views
     # list of images is hardcoded for both index and show displays
     #{index_title}
-    config.index.thumbnail_field = 'THUMBNAIL_s'
+    config.index.thumbnail_field = 'txtimagename1_s'
 
     # solr field configuration for document/show views
     #{show_title}
-    config.show.thumbnail_field = 'THUMBNAIL_s'
+    config.show.thumbnail_field = 'txtimagename1_s'
 
     # Have BL send all facet field names to Solr, which has been the default
     # previously. Simply remove these lines if you'd rather use Solr request
@@ -207,12 +207,18 @@ class CatalogController < ApplicationController
      config.add_show_field  'entered_by_s', label: 'Entered By'
      config.add_show_field  'initial_date_s', label: 'Initial Date'
      config.add_show_field  'date_last_modified_s', label: 'Date Last Modified'
-     config.add_show_field  'txtimagename1_s', label: 'Txtimagename1'
-     config.add_show_field  'txtimagename2_s', label: 'Txtimagename2'
-     config.add_show_field  'txtimagename3_s', label: 'Txtimagename3'
-     config.add_show_field  'txtimagename4_s', label: 'Txtimagename4'
-     config.add_show_field  'txtimagename5_s', label: 'Txtimagename5'
-     config.add_show_field  'txtdrawingname_s', label: 'Txtdrawingname'
+     # config.add_show_field  'txtimagename1_s', label: 'Txtimagename1'
+     # config.add_show_field  'txtimagename2_s', label: 'Txtimagename2'
+     # config.add_show_field  'txtimagename3_s', label: 'Txtimagename3'
+     # config.add_show_field  'txtimagename4_s', label: 'Txtimagename4'
+     # config.add_show_field  'txtimagename5_s', label: 'Txtimagename5'
+     # config.add_show_field  'txtdrawingname_s', label: 'Txtdrawingname'
+     config.add_show_field 'txtimagename1_s', helper_method: 'render_images', label: 'Txtimagename2'
+     config.add_show_field 'txtimagename2_s', helper_method: 'render_images', label: 'Txtimagename2'
+     config.add_show_field 'txtimagename3_s', helper_method: 'render_images', label: 'Txtimagename3'
+     config.add_show_field 'txtimagename4_s', helper_method: 'render_images', label: 'Txtimagename2'
+     config.add_show_field 'txtimagename5_s', helper_method: 'render_images', label: 'Txtimagename5'
+     config.add_show_field 'txtdrawingname_s', helper_method: 'render_images', label: 'Txtdrawingname'
      config.add_show_field  'flag_for_check_s', label: 'Flag For Check'
 
 

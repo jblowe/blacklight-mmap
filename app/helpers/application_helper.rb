@@ -29,6 +29,7 @@ def render_images(options = {})
   # Return a bunch of <img> elements
   cards = options[:value].collect do |imagename|
     content_tag(:div, class: 'card', style: 'width: 18rem; float: left;') do
+      imagename = imagename.gsub('Q:/','/images/')
       image_tag = content_tag(:img, '', src: imagename, class: 'card-img-top')
       card_body = content_tag(:div, class: 'card-body') do
         content_tag(:p, imagename.gsub(/\/images\/.*?\//,'').gsub('.thumb.jpg',''), class: 'card-text')
