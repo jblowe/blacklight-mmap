@@ -52,7 +52,7 @@ module Blacklight
                 view_context.send(thumbnail_method, document, image_options)
               elsif thumbnail_field
                 image_url = thumbnail_value_from_document
-                image_url = image_url.gsub('Q:/','/images/')
+                image_url = '/images/' + image_url
                 view_context.image_tag image_url, image_options if image_url.present?
               end
 
