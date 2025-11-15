@@ -24,7 +24,7 @@ do
   echo "table: solr_data/${table}"
   time psql -R"@@" -A -U $USERNAME -d "$CONNECT_STRING" -f solr_sql/${table}.sql | \
     perl -pe 's/[\r\n\t]/ /g;s/\|/\t/g;s/\@\@/\n/g' > solr_data/${table}.csv
-  perl -i -pe 's/ 00:00:00//g' solr_data/${table}.csv
+  perl -i -pe 's/ 00:00:00//g;s#Q:.##g;' solr_data/${table}.csv
   ##############################################################################
   #  compute a boolean: hascoords = yes/no
   ##############################################################################
