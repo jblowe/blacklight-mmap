@@ -194,29 +194,48 @@ function define_special_fields()
     # ====================
     echo "Defining special fields for $1..."
 
-    if [[ "$1" = "pahma-public" || "$1" == "pahma-internal" ]]; then
+    if [[ "$1" = "mmap-public" ]]; then
         curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
             "add-field":{
-                "name":"objname_sort",
-                "type":"alphaOnlySort",
-                "stored":false,
+                "name":"images_ss",
+                "stored":true,
                 "indexed":true}
         }' $SOLR_CORE_URL/schema
         curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
             "add-copy-field":{"source":
-                "objname_s",
-                "dest": [ "objname_sort" ]}
+                "txtimagename1_s",
+                "dest": [ "images_ss" ]}
         }' $SOLR_CORE_URL/schema
         curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
             "add-copy-field":{"source":
-                "objmusno_s",
-                "dest": [ "objmusno_s_lower" ]}
+                "txtimagename2_s",
+                "dest": [ "images_ss" ]}
         }' $SOLR_CORE_URL/schema
-    elif [[ "$1" = "cinefiles-public" ]]; then
-        # these two fields are needed to 'bridge' the content displayed
-        # for the title field (common_title_ss) in BL
-        copy_fields "doctitle_ss" "common_title_ss"
-        copy_fields "film_title_ss" "common_title_ss"
+        curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
+            "add-copy-field":{"source":
+                "txtimagename3_s",
+                "dest": [ "images_ss" ]}
+        }' $SOLR_CORE_URL/schema
+        curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
+            "add-copy-field":{"source":
+                "txtimagename4_s",
+                "dest": [ "images_ss" ]}
+        }' $SOLR_CORE_URL/schema
+        curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
+            "add-copy-field":{"source":
+                "txtimagename5_s",
+                "dest": [ "images_ss" ]}
+        }' $SOLR_CORE_URL/schema
+        curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
+            "add-copy-field":{"source":
+                "txtimagename5_s",
+                "dest": [ "images_ss" ]}
+        }' $SOLR_CORE_URL/schema
+        curl -s -S -X POST -H 'Content-type:application/json' --data-binary '{
+            "add-copy-field":{"source":
+                "txtdrawingname_s",
+                "dest": [ "images_ss" ]}
+        }' $SOLR_CORE_URL/schema
     fi
 }
 
