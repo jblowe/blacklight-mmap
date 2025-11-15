@@ -144,6 +144,7 @@ class CatalogController < ApplicationController
      config.add_facet_field  'layer_s', label: 'Layer', limit: true
      config.add_facet_field  'feano_s', label: 'Feano', limit: true
      config.add_facet_field  'featype_s', label: 'Featype', limit: true
+     config.add_facet_field  'depcontext_s', label: 'Dep Context', limit: true
      config.add_facet_field  'flag_for_check_s', label: 'Flag For Check', limit: true
 
     # INDEX DISPLAY
@@ -152,6 +153,7 @@ class CatalogController < ApplicationController
      config.add_index_field  'site_name_s', label: 'Site Name'
      config.add_index_field  'bag_id_s', label: 'Bag Id'
      config.add_index_field  'artifact_class_s', label: 'Artifact Class'
+     config.add_index_field  'depcontext_s', label: 'Dep Context'
      config.add_index_field  'maximum_dimension_s', label: 'Maximum Dimension'
      config.add_index_field  'weight_s', label: 'Weight'
      config.add_index_field  'count_s', label: 'Count'
@@ -172,6 +174,7 @@ class CatalogController < ApplicationController
      config.add_show_field  'bag_id_s', label: 'Bag Id'
      config.add_show_field  'artifact_condition_s', label: 'Artifact Condition'
      config.add_show_field  'artifact_class_s', label: 'Artifact Class'
+     config.add_show_field  'depcontext_s', label: 'Dep Context'
      config.add_show_field  'maximum_dimension_s', label: 'Maximum Dimension'
      config.add_show_field  'weight_s', label: 'Weight'
      config.add_show_field  'count_s', label: 'Count'
@@ -181,7 +184,6 @@ class CatalogController < ApplicationController
      config.add_show_field  'comments_s', label: 'Comments'
      config.add_show_field  'bur_phase_s', label: 'Bur Phase'
      config.add_show_field  'level_s', label: 'Level'
-     config.add_show_field  'depcontext_s', label: 'Depcontext'
      config.add_show_field  'square_s', label: 'Square'
      config.add_show_field  'quad_s', label: 'Quad'
      config.add_show_field  'layer_s', label: 'Layer'
