@@ -1,3 +1,8 @@
+# these are terse notes about how the msaccess database export was massaged
+# and loaded into a postgres database.
+#
+# caveat lector!
+#
 # little tweaks to make the export work... :-/
 perl -pe 's/\`/"/g;s/CHARACTER SET .UTF8.//g;s/DOUBLE(
 PRECISION)?/real/;s/longtext/TEXT/i;s/DATETIME/TIMESTAMP/;s/LONGBLOB/BYTEA/;'
@@ -7,9 +12,10 @@ MMBC_for_Postgres.sql | perl -pe "s/\\\'/''/g;" > mmap.sql
 psql -c "drop database mmap"
 psql -c "create database mmap;"
 
-# test to see the magic worked
+# restore from the 'dump'
 rm -f nohup.out ; nohup psql -d mmap < mmap.sql 
 
+# test to see the magic worked
 psql "postgresql:<get the correct string from mmap staff>"
 
 # make a backup of current database
@@ -44,7 +50,7 @@ defaultdb=> \q
 
 psql "postgresql:<get the correct string from mmap staff>" < mmap.sql > mmap.log
 
-# had to do this again...
+# had to do this again for some reason...
 mmap=> ALTER DATABASE mmap OWNER TO elizabeth;
 ALTER DATABASE
 

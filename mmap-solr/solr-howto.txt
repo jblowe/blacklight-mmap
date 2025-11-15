@@ -1,9 +1,0 @@
-# old single table solr refresh
-rm -f nohup.out ; nohup time ./solrETL-public.sh mmap &
-# construct the sql to fetch data in .csv format
-rm -f nohup.out;  nohup time python crosswalk.py&
-# run the sql to fetch all the data
-rm -f nohup.out ; nohup time ./get_tables.sh&
-# load all the subrecords
-rm -rf nohup.out; nohup time  ./solrETL-v2.sh mmap &
-
