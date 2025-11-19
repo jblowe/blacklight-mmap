@@ -30,9 +30,8 @@ do
   ##############################################################################
   # check that all rows have the same number of fields as the header
   ##############################################################################
-  # export NUMCOLS=`grep Record_No ${CORE}.csv | awk '{ FS = "\t" ; print NF}'`
   export NUMCOLS=$(grep Record_No solr_data/${table}.csv | perl -pe 's/\t/\n/g' | wc -l)
-  export NUMCOLS=$(bc -e "$NUMCOLS")
+  export NUMCOLS=$(($NUMCOLS+0))
   echo "numcols $NUMCOLS"
   awk -F'\t' -v NUMCOLS=$NUMCOLS 'NF == NUMCOLS' solr_data/${table}.csv | \
     perl -pe 's/\\/\//g;s/\t"/\t/g;s/"\t/\t/g;' > solr_data/4solr.${table}.csv &
