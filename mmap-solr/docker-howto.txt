@@ -1,13 +1,12 @@
 # this only describes how to use docker to get around
 # 'version mismatch' errors when running pg_dump.
 
-(base) (venv) johnlowe@mac ~ % docker run --rm -v ~/pg_backups:/backup -it postgres:17 bash
+jbsmac ~ % docker run --rm -v ~/pg_backups:/backup -it postgres:17 bash
 root@e646fbbefc17:/# ls backup/
 root@e646fbbefc17:/# pg_dump "postgresql:<get the correct string from mmap staff>" > /backup/mmap.dump
 root@e646fbbefc17:/# pg_dump "postgresql:<get the correct string from mmap staff>" --schema-only > /backup/mmap.schema
 
-# not sure what this was supposed to do!
-docker run --rm -it postgres:17 bash
+#
 psql "postgresql:<get the correct string from mmap staff>" -c "\copy (\n    SELECT table_schema, table_name, column_name, ordinal_position, data_type, is_nullable, column_default\n    FROM information_schema.columns\n    WHERE table_schema NOT IN ('pg_catalog', 'information_schema')\n    ORDER BY table_schema, table_name, ordinal_position\n) TO 'columns.csv' WITH CSV HEADER" > columns.csv
 perl -pe '$i++; s/ on / j$i on j$i."MMAP_Artifact_ID" = /' joins.sql > x.sql
 psql "postgresql:<get the correct string from mmap staff>" -f x.sql > joins.sql
