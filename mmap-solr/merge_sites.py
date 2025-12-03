@@ -120,7 +120,8 @@ def merge_sites(sites_path, photos_path, out_path):
 
         merged_rows.append(row)
 
-    # 5. Write output as pipe-separated
+    # 5. Write sorted output as pipe-separated
+    merged_rows = sorted(merged_rows, key=lambda x: str(x['site_name_s']))
     with open(out_path, "w", newline="", encoding="utf-8") as f_out:
         writer = csv.DictWriter(f_out, fieldnames=out_fieldnames, delimiter=OUT_DELIM)
         writer.writeheader()
