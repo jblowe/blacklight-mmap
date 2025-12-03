@@ -1,1 +1,1 @@
-select * from "tblSite" ;
+select * from sites_for_report;

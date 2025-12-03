@@ -12,7 +12,7 @@ SOLR_CMD=solr
 # for AWS
 # SOLR_CMD=/snap/solr/1/bin/solr
 
-# for solr as deployed on RTL-managed Ubuntu servers
+# for solr as deployed on Ubuntu servers
 # SOLR_CMD=/opt/solr/bin/solr
 
 SOLR_PORT="8983"

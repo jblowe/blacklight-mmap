@@ -1,5 +1,10 @@
 #!/bin/bash -x
 date
+
+if [[ ! ${CONNECT_STRING} ]]; then
+  echo set env var CONNECT_STRING!
+  exit 1
+fi
 ##############################################################################
 # make sure we have a directory to put the intermediate data in
 ##############################################################################
@@ -7,8 +12,10 @@ mkdir -p solr_data
 
 TENANT=$1
 CORE="public"
-CONNECT_STRING="postgresql:<get the correct string from mmap staff>"
-
+# CONNECT_STRING is like "postgresql://<host>/<database>
+# and must be available as an environment variable.
+# e.g. export CONNECT_STRING="postgresql://localhost:5432/mmap"
+CONNECT_STRING=${CONNECT_STRING}
 ##############################################################################
 # clear out the existing data
 ##############################################################################
@@ -22,7 +29,7 @@ source export_tables.sh
 for table in "${tables[@]}"
 do
   echo "table: solr_data/${table}"
-  time psql -R"@@" -A -U $USERNAME -d "$CONNECT_STRING" -f solr_sql/${table}.sql | \
+  time psql -R"@@" -A -d "$CONNECT_STRING" -f solr_sql/${table}.sql | \
     perl -pe 's/[\r\n\t]/ /g;s/\|/\t/g;s/\@\@/\n/g' > solr_data/${table}.csv
   perl -i -pe 's/ 00:00:00//g;s#Q:.##g;' solr_data/${table}.csv
   ##############################################################################
