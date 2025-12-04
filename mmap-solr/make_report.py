@@ -6,10 +6,12 @@ Features:
   - Clean left metadata column grouped by headings.
   - Geographic Info section:
       * Left: nested table with all geo metadata.
-      * Right: map thumbnail + Google Map embed + link (if available).
+      * Right: map thumbnail + Google Map link (embed on screen only).
   - Right column: large main image + up to 3 small thumbnails below it.
   - Omit empty rows, omit empty sections, omit image types with no images.
-  - All styling in a <style> block, including @media print for PDF-friendly output.
+  - All styling in a <style> block, including @media print for PDF-friendly output:
+      * metadata + images remain side-by-side
+      * Google Maps iframe hidden in print
 """
 
 import csv
@@ -18,7 +20,8 @@ import html
 from typing import Dict, List, Tuple
 
 
-URL_PREFIX = "http://localhost:3002/mmap-images/"   # set this as needed
+URL_PREFIX = "http://localhost:3002/mmap-images/"                 # for local infrared server
+# URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"   # for jbs aws instance
 
 
 # === LABEL → FIELD MAPPING ====================================================
@@ -79,7 +82,7 @@ label_to_field: Dict[str, str] = {
 }
 
 
-# Image types: Map handled separately
+# Image types: Map handled separately in Geographic Info
 IMAGE_TYPES: List[Tuple[str, str]] = [
     ("General view", "General_view_THUMBNAILS_ss"),
     ("Artifacts", "Artifacts_THUMBNAILS_ss"),
@@ -107,6 +110,8 @@ def get_thumb_list(raw: str) -> List[str]:
 
 
 def get_filename(path: str) -> str:
+    if not path:
+        return ""
     return path.replace("\\", "/").split("/")[-1]
 
 
@@ -116,7 +121,7 @@ def render_metadata_column(row: dict) -> str:
     """Build the entire metadata column including Geographic Info map block."""
     sections = []
     current_heading = None
-    current_rows = []
+    current_rows: List[Tuple[str, str]] = []
 
     def flush():
         nonlocal current_heading, current_rows, sections
@@ -141,7 +146,7 @@ def render_metadata_column(row: dict) -> str:
 
     flush()
 
-    html_parts = []
+    html_parts: List[str] = []
 
     for sec in sections:
         heading = sec["heading"]
@@ -162,7 +167,7 @@ def render_metadata_column(row: dict) -> str:
             have_coords = bool(lat and lon)
             have_3rdcol = bool(map_thumb or have_coords)
 
-            # Nested table for metadata
+            # Nested table for geo metadata
             meta_rows_html = []
             for label, value in rows:
                 meta_rows_html.append(
@@ -234,7 +239,7 @@ def render_metadata_column(row: dict) -> str:
 # === IMAGES COLUMN RENDERING ==================================================
 
 def render_images_column(row: dict) -> str:
-    parts = []
+    parts: List[str] = []
 
     for type_label, field_name in IMAGE_TYPES:
         raw = (row.get(field_name) or "").strip()
@@ -243,7 +248,7 @@ def render_images_column(row: dict) -> str:
             continue
 
         main = thumbs[0]
-        extras = thumbs[1:4]
+        extras = thumbs[1:4]  # up to 3 more
         main_url = build_image_url(main)
         main_title = get_filename(main)
 
@@ -252,23 +257,25 @@ def render_images_column(row: dict) -> str:
 
         # Main image
         parts.append(
-            f'<img src="{escape(main_url)}" title="{escape(main_title)}" '
+            f'<img src="{escape(main_url)}" '
+            f'title="{escape(main_title)}" '
             'class="img-main" />'
         )
 
-        # 3 smaller thumbnails
+        # Extra thumbnails
         if extras:
             parts.append('<div class="img-small-row">')
             for t in extras:
                 url = build_image_url(t)
                 title = get_filename(t)
                 parts.append(
-                    f'<img src="{escape(url)}" title="{escape(title)}" '
+                    f'<img src="{escape(url)}" '
+                    f'title="{escape(title)}" '
                     'class="img-small" />'
                 )
             parts.append("</div>")
 
-        parts.append("</div>")
+        parts.append("</div>")  # end type block
 
     return "\n".join(parts)
 
@@ -339,7 +346,8 @@ body {
     gap: 16px;
 }
 
-.col-left, .col-right {
+.col-left,
+.col-right {
     width: 50%;
 }
 
@@ -442,29 +450,87 @@ body {
 
 /* ----- Print / PDF optimization ----- */
 @media print {
+    @page {
+        margin: 0.25in;
+    }
+
     body {
         background: #ffffff;
         padding: 0;
+        font-size: 11px;
     }
+
     .site-card {
         box-shadow: none;
         border: 1px solid #000;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         page-break-inside: avoid;
     }
+
+    /* Keep columns side-by-side on paper */
     .row-flex {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 8px;
     }
-    .col-left, .col-right {
-        width: 100%;
+
+    .col-left,
+    .col-right {
+        width: 50%;
     }
+
+    .site-title {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .sec-heading {
+        font-size: 0.95rem;
+        margin: 6px 0 3px 0;
+        padding-bottom: 2px;
+    }
+
+    .meta-label,
+    .meta-value {
+        padding: 2px 3px;
+        font-size: 0.9em;
+    }
+
+    .meta-table {
+        margin-bottom: 4px;
+    }
+
+    .geo-map-thumb {
+        max-width: 110px;
+    }
+
+    /* Hide Google Maps iframe in print (browsers won't render it anyway) */
     .geo-iframe {
-        width: 100%;
-        height: 120px;
+        display: none !important;
     }
-    .img-main, .img-small {
+
+    .geo-link {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 4px;
+        text-decoration: underline;
+    }
+
+    /* Main images stay readable but not crazy huge */
+    .img-main {
         max-width: 100%;
     }
+
+    /* Small thumbs stay small even in print */
+    .img-small-row {
+        display: flex;
+        gap: 3px;
+    }
+
+    .img-small {
+        flex: 0 0 32%;
+        max-width: 32%;
+    }
+
     a {
         color: #000;
         text-decoration: underline;
