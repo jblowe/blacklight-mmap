@@ -297,10 +297,9 @@ body {
 
 .site-card {
     background: #fff;
-    border: 1px solid #ddd;
     border-radius: 4px;
     padding: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
@@ -421,6 +420,13 @@ body {
 
 /* ----- Print / PDF optimization ----- */
 @media print {
+    .site-card {
+        page-break-before: always;
+    }
+    .site-card:first-child {
+        page-break-before: auto;
+    }
+    
     @page {
         margin: 0.5in;
     }
@@ -433,8 +439,7 @@ body {
 
     .site-card {
         box-shadow: none;
-        border: 1px solid #000;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         page-break-inside: avoid;
     }
 
@@ -486,7 +491,7 @@ body {
 
     .img-main {
         max-width: 100%;
-        max-height: 2in;
+        max-height: 3.4in;
         object-fit: contain;
     }
 
