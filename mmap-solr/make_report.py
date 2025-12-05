@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 make_report.py — generates standalone HTML report for merged_sites.tsv
 
@@ -20,8 +21,8 @@ import html
 from typing import Dict, List, Tuple
 
 
-URL_PREFIX = "http://localhost:3002/mmap-images/"                 # for local infrared server
-# URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"   # for jbs aws instance
+URL_PREFIX = "http://localhost:3002/mmap-images/"                   # for local infrared server
+#  URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"  # for jbs aws instance
 
 
 # === LABEL → FIELD MAPPING ====================================================
@@ -82,7 +83,7 @@ label_to_field: Dict[str, str] = {
 }
 
 
-# Image types: Map handled separately in Geographic Info
+# Image types (Map handled separately)
 IMAGE_TYPES: List[Tuple[str, str]] = [
     ("General view", "General_view_THUMBNAILS_ss"),
     ("Artifacts", "Artifacts_THUMBNAILS_ss"),
@@ -90,8 +91,6 @@ IMAGE_TYPES: List[Tuple[str, str]] = [
     ("People", "People_THUMBNAILS_ss"),
 ]
 
-
-# === HELPERS ==================================================================
 
 def escape(s: str) -> str:
     return html.escape(s or "", quote=True)
@@ -115,10 +114,7 @@ def get_filename(path: str) -> str:
     return path.replace("\\", "/").split("/")[-1]
 
 
-# === METADATA COLUMN RENDERING ===============================================
-
 def render_metadata_column(row: dict) -> str:
-    """Build the entire metadata column including Geographic Info map block."""
     sections = []
     current_heading = None
     current_rows: List[Tuple[str, str]] = []
@@ -136,7 +132,6 @@ def render_metadata_column(row: dict) -> str:
             current_heading = label
             current_rows = []
             continue
-
         if not field:
             continue
         v = (row.get(field) or "").strip()
@@ -151,11 +146,9 @@ def render_metadata_column(row: dict) -> str:
     for sec in sections:
         heading = sec["heading"]
         rows = sec["rows"]
-
         html_parts.append(f'<h3 class="sec-heading">{escape(heading)}</h3>')
 
         if heading == "Geographic Info":
-            # Map thumbnail & coords
             map_raw = (row.get("Map_THUMBNAILS_ss") or "").strip()
             thumbs = get_thumb_list(map_raw)
             map_thumb = thumbs[0] if thumbs else ""
@@ -167,7 +160,6 @@ def render_metadata_column(row: dict) -> str:
             have_coords = bool(lat and lon)
             have_3rdcol = bool(map_thumb or have_coords)
 
-            # Nested table for geo metadata
             meta_rows_html = []
             for label, value in rows:
                 meta_rows_html.append(
@@ -179,7 +171,6 @@ def render_metadata_column(row: dict) -> str:
             meta_rows_str = "".join(meta_rows_html)
 
             html_parts.append('<table class="meta-table"><tbody><tr>')
-            # Left side: nested table with geo metadata
             html_parts.append(
                 "<td class='geo-meta-cell' colspan='2'>"
                 "<table class='meta-table-inner'><tbody>"
@@ -188,17 +179,14 @@ def render_metadata_column(row: dict) -> str:
                 "</td>"
             )
 
-            # Right side: maps column (if anything to show)
             if have_3rdcol:
                 html_parts.append("<td class='geo-extra'>")
-
                 if map_thumb:
                     html_parts.append(
                         f'<img src="{escape(map_url)}" '
                         f'title="{escape(map_title)}" '
                         'class="geo-map-thumb" />'
                     )
-
                 if have_coords:
                     emb = (
                         f"https://www.google.com/maps?q={escape(lat)},"
@@ -216,13 +204,10 @@ def render_metadata_column(row: dict) -> str:
                         f'<div><a href="{link}" target="_blank" '
                         'class="geo-link">Open in Google Maps</a></div>'
                     )
-
                 html_parts.append("</td>")
 
             html_parts.append("</tr></tbody></table>")
-
         else:
-            # Normal section
             html_parts.append('<table class="meta-table"><tbody>')
             for label, value in rows:
                 html_parts.append(
@@ -236,11 +221,8 @@ def render_metadata_column(row: dict) -> str:
     return "\n".join(html_parts)
 
 
-# === IMAGES COLUMN RENDERING ==================================================
-
 def render_images_column(row: dict) -> str:
     parts: List[str] = []
-
     for type_label, field_name in IMAGE_TYPES:
         raw = (row.get(field_name) or "").strip()
         thumbs = get_thumb_list(raw)
@@ -248,21 +230,18 @@ def render_images_column(row: dict) -> str:
             continue
 
         main = thumbs[0]
-        extras = thumbs[1:4]  # up to 3 more
+        extras = thumbs[1:4]
         main_url = build_image_url(main)
         main_title = get_filename(main)
 
         parts.append('<div class="img-type-block">')
         parts.append(f'<div class="img-type-heading">{escape(type_label)}</div>')
-
-        # Main image
         parts.append(
             f'<img src="{escape(main_url)}" '
             f'title="{escape(main_title)}" '
             'class="img-main" />'
         )
 
-        # Extra thumbnails
         if extras:
             parts.append('<div class="img-small-row">')
             for t in extras:
@@ -275,20 +254,15 @@ def render_images_column(row: dict) -> str:
                 )
             parts.append("</div>")
 
-        parts.append("</div>")  # end type block
-
+        parts.append("</div>")
     return "\n".join(parts)
 
 
-# === MAIN SITE CARD RENDERING =================================================
-
 def render_site_div(row: dict) -> str:
     site_name = escape(row.get("site_name_s", ""))
-
     meta_html = render_metadata_column(row)
     img_html = render_images_column(row)
-
-    return f"""
+    return f'''
 <div class="site-card">
   <h2 class="site-title">{site_name}</h2>
   <div class="row-flex">
@@ -296,10 +270,8 @@ def render_site_div(row: dict) -> str:
     <div class="col-right">{img_html}</div>
   </div>
 </div>
-"""
+'''.strip()
 
-
-# === MAIN =====================================================================
 
 def main():
     if len(sys.argv) != 2:
@@ -307,17 +279,13 @@ def main():
         sys.exit(1)
 
     path = sys.argv[1]
-    delim = '\t'
-
     with open(path, encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f, delimiter=delim)
+        reader = csv.DictReader(f, delimiter="\t")
         rows = list(reader)
 
     print("<!DOCTYPE html><html><head><meta charset='utf-8'>")
     print("<title>Site Report</title>")
-
-    # ===================== CSS STYLESHEET =======================
-    print(r"""
+    print(r'''
 <style>
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -428,9 +396,11 @@ body {
 .img-main {
     max-width: 100%;
     height: auto;
+    max-height: 400px;
     border: 1px solid #ccc;
     padding: 2px;
     border-radius: 2px;
+    object-fit: contain;
 }
 
 .img-small-row {
@@ -448,10 +418,11 @@ body {
     padding: 2px;
 }
 
+
 /* ----- Print / PDF optimization ----- */
 @media print {
     @page {
-        margin: 0.25in;
+        margin: 0.5in;
     }
 
     body {
@@ -467,10 +438,9 @@ body {
         page-break-inside: avoid;
     }
 
-    /* Keep columns side-by-side on paper */
     .row-flex {
         flex-direction: row;
-        gap: 8px;
+        gap: 6px;
     }
 
     .col-left,
@@ -479,48 +449,47 @@ body {
     }
 
     .site-title {
-        font-size: 1.1rem;
-        margin-bottom: 8px;
+        font-size: 1.0rem;
+        margin-bottom: 6px;
     }
 
     .sec-heading {
-        font-size: 0.95rem;
-        margin: 6px 0 3px 0;
-        padding-bottom: 2px;
+        font-size: 0.9rem;
+        margin: 4px 0 2px 0;
+        padding-bottom: 1px;
     }
 
     .meta-label,
     .meta-value {
-        padding: 2px 3px;
-        font-size: 0.9em;
+        padding: 1px 2px;
+        font-size: 0.85em;
     }
 
     .meta-table {
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
 
     .geo-map-thumb {
-        max-width: 110px;
+        max-width: 90px;
     }
 
-    /* Hide Google Maps iframe in print (browsers won't render it anyway) */
     .geo-iframe {
         display: none !important;
     }
 
     .geo-link {
         display: block;
-        font-size: 0.85rem;
-        margin-top: 4px;
+        font-size: 0.8rem;
+        margin-top: 3px;
         text-decoration: underline;
     }
 
-    /* Main images stay readable but not crazy huge */
     .img-main {
         max-width: 100%;
+        max-height: 2in;
+        object-fit: contain;
     }
 
-    /* Small thumbs stay small even in print */
     .img-small-row {
         display: flex;
         gap: 3px;
@@ -531,19 +500,20 @@ body {
         max-width: 32%;
     }
 
+    .img-type-block:nth-of-type(n+3) {
+        display: none !important;
+    }
+
     a {
         color: #000;
         text-decoration: underline;
     }
 }
 </style>
-""")
-
+''')
     print("</head><body><div style='max-width:1200px; margin:0 auto;'>")
-
     for row in rows:
         print(render_site_div(row))
-
     print("</div></body></html>")
 
 
