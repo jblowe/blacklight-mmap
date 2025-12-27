@@ -62,6 +62,9 @@ def read_photo_data(photos_path):
 
             # Track types in the order first seen
             if t and t not in seen_types:
+                if 'JPG' in t or '200' in t:
+                    print(f'bad type: {t}, from: {row}')
+                    continue
                 seen_types.add(t)
                 type_order.append(t)
 

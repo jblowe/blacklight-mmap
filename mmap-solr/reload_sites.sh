@@ -12,16 +12,18 @@ grep site_name mmap-dbsites.csv | perl -pe 's/ +/_/g' > mmap-dbsites.header.csv
 # make a list of the site images and prep it for solr
 find ~/image_repos/LaosPhotos/derivatives -type f | grep -v DS_Store | grep -v extra_maps > mmap-site-photos.txt
 perl -ne 'chomp ; s#/Users/johnlowe/image_repos/LaosPhotos/derivatives/##;print;print "\t";s/Articts/Artifacts/;s#missing_site_name/#missing_site_name #;s/General [Vv]/General_v/;s#missing_site_name/#missing_site_name #;s#/#\t#g;s/ /\t/;print "$_\n"' mmap-site-photos.txt > sites1.tmp
-cat mmap-site-photos.header.csv sites1.tmp > mmap-site-photos.csv
+
+perl -ne 'print if /\.(jpg|jpeg|tif|gif|png|webp)/i' sites1.tmp > sites2.tmp
+cat mmap-site-photos.header.csv sites2.tmp > mmap-site-photos.csv
 perl -pe 's/\t/\n/g;s/\r//g;' mmap-site-photos.header.csv > mmap-site-photos.fields.txt
-python3 evaluate.py mmap-site-photos.csv sites2.tmp
+python3 evaluate.py mmap-site-photos.csv sites3.tmp
 
 # merge them
 python merge_sites.py mmap-dbsites.csv mmap-site-photos.csv mmap-sites.csv
 head -1 mmap-sites.csv | perl -pe 's/\t/\n/g;s/\r//g;' > mmap-sites.fields.txt
 
 # load the whole shebang into solr core mmap-sites
-./makesolrcores.sh mmap-sites
+# ./makesolrcores.sh mmap-sites
 ./solrETL-sites.sh mmap-sites mmap-sites
 
 rm *.tmp
