@@ -1,0 +1,19 @@
+
+# if you need to regenerate derivatives:
+rm -rf nohup.out;  nohup time ./make_derivatives.sh ~/image_repos/LaosPhotos &
+# nb: expects to find subdir 'originals' in the directory parameter
+#     and you'll need to tar czf the derivatives directory yourself
+#     and upload it where you'll need it.
+
+# extract sites metadata from postgres (CONNECT_STRING needs to be set)
+# parse directory structure for derivatives, needed for merge
+# empties and reloads the solr mmap-sites core, this is needed for the
+# site catalog code to find images
+export CONNECT_STRING="postgresql://..."
+./reload_sites.sh
+
+# finally, regenerate the site catalog
+# (uses the merges sites csv file generated to create solr core
+python make_report.py mmap-sites.csv > site_report.html
+
+# that is all
