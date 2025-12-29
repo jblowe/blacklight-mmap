@@ -4,6 +4,7 @@
 import csv
 import sys
 import html
+from datetime import datetime
 from typing import Dict, List, Tuple
 from report_i18n import label_to_field, IMAGE_TYPES
 
@@ -46,7 +47,7 @@ def render_front_matter() -> str:
     title_html = read_snippet("title_page.html")
     intro_html = read_snippet("introduction.html")
     return "\n".join([
-        title_html,
+        title_html.format(DATE=datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
         '<div class="page-break"></div>',
         intro_html,
         '<div class="page-break"></div>',
