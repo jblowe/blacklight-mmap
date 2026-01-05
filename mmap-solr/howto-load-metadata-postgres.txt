@@ -1,0 +1,19 @@
+#
+# prep
+psql -A $CONNECT_STRING -f getschema.sql > tblSite-columns.csv
+vi config.csv
+pip install psycopg2-binary
+python csv_to_postgres_load.py
+chmod +x loadpostgres.sh
+
+# to run
+export CONNECT_STRING="postgresql:..."
+./loadpostgres.sh Galaxy-2025-12-28.csv "$CONNECT_STRING" mapping-tablet-to-postgres.csv
+
+# a few notes
+# mapping.csv has to have both from and to columns specified, no empties, 
+# exact text, of course.
+# order does not matter. almost all the the pairs are the same. couple exceptions
+STware,STWare
+MortInter,Mortinter
+
