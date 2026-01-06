@@ -61,6 +61,11 @@ def normalize_csv_value(v, null_blank: bool):
     return v
 
 
+
+def make_dedupe_key(values_by_table_col: dict, dedupe_cols: list[str]):
+    """Build a hashable key tuple from mapped values using the given table columns."""
+    return tuple(values_by_table_col.get(c) for c in dedupe_cols)
+
 def _import_psycopg():
     """
     Prefer psycopg (v3). Fall back to psycopg2 if installed.
@@ -165,6 +170,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--dry-run", action="store_true", help="Parse and validate, but do not insert")
     parser.add_argument("--debug", action="store_true", help="Print diagnostics (effective options + first few rows values)")
     parser.add_argument("--commit-every", type=int, default=1000, help="Commit every N rows (default: 1000)")
+    parser.add_argument("--dedupe-skip", action="store_true",
+                        help="Skip inserting rows that match an existing record on the dedupe key (see --dedupe-cols).")
+    parser.add_argument("--dedupe-cols", default="Site_Name,Revisits",
+                        help="Comma-separated target table column names that define uniqueness. Default: Site_Name,Revisits")
     args = parser.parse_args(argv)
 
     db, sql, connect = _import_psycopg()
@@ -215,10 +224,24 @@ def main(argv: Optional[List[str]] = None) -> int:
         conn = connect(args.conn)
         try:
             cur = conn.cursor()
+            failures = []
+            skipped_dupes = 0
+            existing_keys = set()
+            dedupe_cols = [c.strip() for c in args.dedupe_cols.split(',') if c.strip()]
+            if args.dedupe_skip:
+                if not dedupe_cols:
+                    raise ValueError('--dedupe-cols resolved to empty list')
+                key_cols_sql = sql.SQL(', ').join([sql.Identifier(c) for c in dedupe_cols])
+                preload_sql = sql.SQL('SELECT {} FROM {}').format(key_cols_sql, table_ident)
+                cur.execute(preload_sql)
+                for r in cur.fetchall():
+                    existing_keys.add(tuple(r))
+                if args.debug:
+                    print(f"[DEBUG] preloaded {len(existing_keys)} existing key(s) for dedupe on {dedupe_cols}", file=sys.stderr)
+
             if args.debug:
                 print(f"[DEBUG] null_blank={args.null_blank} delimiter={args.delimiter!r} encoding={args.encoding} commit_every={args.commit_every}", file=sys.stderr)
             batch = 0
-            failures = []
             for row in reader:
                 row_count += 1
                 values = []
@@ -227,12 +250,14 @@ def main(argv: Optional[List[str]] = None) -> int:
                     v = normalize_csv_value(raw, args.null_blank)
                     values.append(v)
                 if args.debug and row_count <= 5:
-                    preview = {mapping[i][0]: values[i] for i in range(len(values))}
+                    preview = values_by_table_col
                     print(f"[DEBUG] row {row_count} mapped values: {preview}", file=sys.stderr)
                 try:
                     cur.execute(insert_sql, values)
                     inserted += 1
                     batch += 1
+                    if args.dedupe_skip:
+                        existing_keys.add(make_dedupe_key(values_by_table_col, dedupe_cols))
                 except Exception as e:
                     conn.rollback()
                     failures.append({
@@ -252,6 +277,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             conn.commit()
 
             print(f"Done. Inserted {inserted} row(s) into {args.table}.")
+
+            if args.dedupe_skip:
+                print(f"Skipped duplicates: {skipped_dupes}")
 
             if failures:
                 print("\n=== FAILED ROWS REPORT ===")

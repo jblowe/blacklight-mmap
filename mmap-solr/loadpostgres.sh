@@ -3,5 +3,7 @@ python csv_to_postgres_load.py \
   '"public"."tblSite"' \
   "$2" \
   "$3" \
-  --null-blank
+  --null-blank \
+  --dedupe-skip \
+  --dedupe-cols "Site_Name"
 
