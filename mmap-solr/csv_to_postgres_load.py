@@ -238,10 +238,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                     existing_keys.add(tuple(r))
                 if args.debug:
                     print(f"[DEBUG] preloaded {len(existing_keys)} existing key(s) for dedupe on {dedupe_cols}", file=sys.stderr)
-
             if args.debug:
                 print(f"[DEBUG] null_blank={args.null_blank} delimiter={args.delimiter!r} encoding={args.encoding} commit_every={args.commit_every}", file=sys.stderr)
             batch = 0
+            failures = []
             for row in reader:
                 row_count += 1
                 values = []
@@ -249,15 +249,37 @@ def main(argv: Optional[List[str]] = None) -> int:
                     raw = row.get(csv_col, None)
                     v = normalize_csv_value(raw, args.null_blank)
                     values.append(v)
+                values_by_table_col = {mapping[i][0]: values[i] for i in range(len(values))}
+                if args.dedupe_skip:
+                    key = make_dedupe_key(values_by_table_col, dedupe_cols)
+                    if key in existing_keys:
+                        skipped_dupes += 1
+                        if args.debug and row_count <= 5:
+                            print(f"[DEBUG] row {row_count} skipped as duplicate on {dedupe_cols}: {key}", file=sys.stderr)
+                        continue
+
                 if args.debug and row_count <= 5:
                     preview = values_by_table_col
                     print(f"[DEBUG] row {row_count} mapped values: {preview}", file=sys.stderr)
+                # Use a savepoint so a single bad row does not rollback prior successful inserts
+                cur.execute("SAVEPOINT row_sp")
                 try:
                     cur.execute(insert_sql, values)
                     inserted += 1
                     batch += 1
                     if args.dedupe_skip:
                         existing_keys.add(make_dedupe_key(values_by_table_col, dedupe_cols))
+                    cur.execute("RELEASE SAVEPOINT row_sp")
+                except Exception as e:
+                    cur.execute("ROLLBACK TO SAVEPOINT row_sp")
+                    cur.execute("RELEASE SAVEPOINT row_sp")
+                    failures.append({
+                        "row_number": row_count,
+                        "error": str(e),
+                        "values": values,
+                        "mapped": values_by_table_col,
+                    })
+                    continue
                 except Exception as e:
                     conn.rollback()
                     failures.append({
@@ -287,6 +309,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 for f in failures:
                     print(f"- CSV row {f['row_number']}: {f['error']}")
                     print(f"  Values: {f['values']}")
+                    if 'mapped' in f:
+                        print(f"  Mapped: {f['mapped']}")
             else:
                 print("No failed rows.")
 
