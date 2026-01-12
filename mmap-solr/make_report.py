@@ -4,26 +4,21 @@
 import csv
 import sys
 import html
-from datetime import datetime
+import json
+from pathlib import Path
+import re
 from typing import Dict, List, Tuple
-from report_i18n import label_to_field, IMAGE_TYPES
 
 
 URL_PREFIX = "https://mmap.org"   # set this as needed for your thumbnails
 
 
-# (label_to_field and IMAGE_TYPES are imported from report_i18n.py)
-
-
-
-from pathlib import Path
-import re
-
+# --- Front/back matter --------------------------------------------------------
 
 def read_snippet(path: str) -> str:
     """
-    Read an HTML snippet file and return its contents.
-    If the snippet contains a <body> wrapper, return only the <body> contents.
+    Read an HTML snippet from disk.
+    If it contains <body>...</body>, extract body contents.
     """
     txt = Path(path).read_text(encoding="utf-8")
     m = re.search(r"<body[^>]*>(.*)</body>", txt, flags=re.IGNORECASE | re.DOTALL)
@@ -33,10 +28,6 @@ def read_snippet(path: str) -> str:
 
 
 def make_site_anchor(row: dict) -> str:
-    """
-    Create a stable anchor id for a site.
-    Prefer siteid_s if present; else site_name_s.
-    """
     raw = (row.get("siteid_s") or row.get("site_name_s") or "site").strip().lower()
     raw = re.sub(r"\s+", "-", raw)
     raw = re.sub(r"[^a-z0-9_-]+", "", raw)
@@ -44,25 +35,27 @@ def make_site_anchor(row: dict) -> str:
 
 
 def render_front_matter() -> str:
+    # title page, then intro, each separated by an explicit page break
     title_html = read_snippet("title_page.html")
     intro_html = read_snippet("introduction.html")
     return "\n".join([
-        title_html.format(DATE=datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        '<div class="front-matter">', title_html, '</div>',
         '<div class="page-break"></div>',
-        intro_html,
+        '<div class="front-matter">', intro_html, '</div>',
         '<div class="page-break"></div>',
     ])
 
 
 def render_index(rows: List[dict]) -> str:
     """
-    Index keyed by Closest River (nrprimrv_s). Links to anchors on each site.
+    Index keyed by Closest River (nrprimrv_s), placed after the introduction.
     """
     idx = {}
     for row in rows:
-        river = (row.get("nrprimrv_s") or "").strip() or "Unknown"
+        key = (row.get("nrprimrv_s") or "").strip() or "Unknown"
         site = (row.get("site_name_s") or "").strip() or "(Unnamed site)"
-        idx.setdefault(river, []).append((site, make_site_anchor(row)))
+        anchor = make_site_anchor(row)
+        idx.setdefault(key, []).append((site, anchor))
 
     for k in idx:
         idx[k].sort(key=lambda x: x[0].lower())
@@ -70,15 +63,126 @@ def render_index(rows: List[dict]) -> str:
 
     parts = []
     parts.append('<div class="index-section">')
-    parts.append('<h2 class="site-title">Index by Closest River</h2>')
+    parts.append('<h1 class="sec-heading">Sites by Closest River, in alphabetical order</h1>')
     parts.append('<dl class="index-dl">')
-    for river in keys:
-        parts.append(f'<dt>{escape(river)}</dt>')
-        links = [f'<a href="#{escape(anchor)}">{escape(site)}</a>' for site, anchor in idx[river]]
+    for k in keys:
+        parts.append(f'<dt>{escape(k)}</dt>')
+        links = [f'<a href="#{escape(a)}">{escape(s)}</a>' for (s, a) in idx[k]]
         parts.append(f'<dd>{" • ".join(links)}</dd>')
     parts.append('</dl>')
     parts.append('</div>')
     return "\n".join(parts)
+
+
+# --- Image popout overlay -----------------------------------------------------
+
+IMG_POPUP_OVERLAY = """
+<div id="imgPopup" class="img-popup-overlay" aria-hidden="true">
+  <div class="img-popup-panel">
+    <div class="img-popup-topbar">
+      <div id="imgPopupTitle" style="font-weight:700;"></div>
+      <div class="img-popup-close" onclick="hideImgPopup()">Close</div>
+    </div>
+    <div id="imgPopupGrid" class="img-popup-grid"></div>
+  </div>
+</div>
+<script>
+function hideImgPopup(){
+  const o=document.getElementById("imgPopup");
+  o.style.display="none";
+  o.setAttribute("aria-hidden","true");
+  document.getElementById("imgPopupGrid").innerHTML="";
+}
+function showImgPopup(title, itemsJson){
+  const items=JSON.parse(itemsJson);
+  document.getElementById("imgPopupTitle").textContent=title;
+  const grid=document.getElementById("imgPopupGrid");
+  grid.innerHTML="";
+  for(const it of items){
+    const a=document.createElement("a");
+    a.href=it.full;
+    a.target="_blank";
+    const img=document.createElement("img");
+    img.src=it.thumb;
+    img.title=it.title || "";
+    a.appendChild(img);
+    grid.appendChild(a);
+  }
+  const o=document.getElementById("imgPopup");
+  o.style.display="block";
+  o.setAttribute("aria-hidden","false");
+}
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") hideImgPopup(); });
+</script>
+"""
+
+
+# === LABEL → FIELD MAPPING ====================================================
+label_to_field: Dict[str, str] = {
+    # --- Site Info ---
+    "Site Info": "heading",
+    "Site:": "site_name_s",
+    "Description:": "sitedesc_s",
+    "Date Recorded:": "year_recorded_s",
+    "Access:": "acces_s",
+    "Nearest Village:": "vill_name_s",
+    "Closest River:": "nrprimrv_s",
+    "Closest Stream:": "nrsecrv_s",
+    "Visit Comments:": "visit_comm_s",
+    "Excavation Priority:": "exc_pri_s",
+
+    # --- Geographic Info ---
+    "Geographic Info": "heading",
+    "Latitude:": "point_y_s",
+    "Longitude:": "point_x_s",
+    "Length:": "dimena_s",
+    "Width:": "dimenb_s",
+    "Min Depth:": "estdepth_s",
+    "Max Depth:": "",
+    "Time Spent:": "time_spent_s",
+
+    # --- Site Characteristics ---
+    "Site Characteristics": "heading",
+    "Site Characteristics:": "site_characteristics_s",
+    "Site Characteristics Comments:": "site_comm_s",
+
+    # --- Site Conditions ---
+    "Site Conditions": "heading",
+    "Site Conditions Comments:": "condcomm_s",
+    "Caves:": "cave_fl_s",
+
+    # --- Recent Disturbance ---
+    "Recent Disturbance": "heading",
+    "Distubance:": "recent_disturbance_s",
+    "Disturbance Comments:": "distcomm_s",
+
+    # --- Past Site Functions ---
+    "Past Site Functions": "heading",
+    "Past Site Function:": "past_site_functions_s",
+    "Past Functions Comments:": "pastfcomm_s",
+
+    # --- Environmental Conditions ---
+    "Environmental Conditions": "heading",
+    "Environment:": "environment_s",
+    "Environmental Comments:": "envcomm_s",
+    "Vegetation:": "natveg_s",
+
+    # --- Artifact Info ---
+    "Artifact Info": "heading",
+    "Artifacts Present:": "artifacts_present_s",
+    "Artifacts:": "oth_art_s",
+    "Artifact Comments:": "artcomm_s",
+}
+
+
+# Image types (Map handled separately)
+IMAGE_TYPES: List[Tuple[str, str]] = [
+    ("General view", "General view_THUMBNAILS_ss"),
+    ("Misc", "Misc_THUMBNAILS_ss"),
+    ("Artifacts", "Artifacts_THUMBNAILS_ss"),
+    ("People", "People_THUMBNAILS_ss"),
+]
+
 
 def escape(s: str) -> str:
     return html.escape(s or "", quote=True)
@@ -93,10 +197,7 @@ def build_image_url(path: str) -> str:
 def get_thumb_list(raw: str) -> List[str]:
     if not raw:
         return []
-    images = sorted(raw.split("|"))
-    hero = [p.strip() for p in images if p.strip() and 'hero' in p]
-    rest = [p.strip() for p in images if p.strip() and not 'hero' in p]
-    return hero + rest
+    return [p.strip() for p in raw.split("|") if p.strip()]
 
 
 def get_filename(path: str) -> str:
@@ -214,38 +315,64 @@ def render_metadata_column(row: dict) -> str:
 
 def render_images_column(row: dict) -> str:
     parts: List[str] = []
+
     for type_label, field_name in IMAGE_TYPES:
         raw = (row.get(field_name) or "").strip()
         thumbs = get_thumb_list(raw)
         if not thumbs:
             continue
 
+        # Build per-image thumb/full pairs for popup and linking
+        filename_field = f"{type_label}_FILENAME_ss"
+        files = get_thumb_list((row.get(filename_field) or "").strip())
+        items = []
+        for i, t in enumerate(thumbs):
+            full_path = files[i] if i < len(files) and files[i] else t
+            items.append({
+                "thumb": build_image_url(t),
+                "full": build_image_url(full_path),
+                "title": get_filename(t)
+            })
+        items_json = escape(json.dumps(items))
+        n_images = len(items)
+
         main = thumbs[0]
-        extras = thumbs[1:4]
+        extras = thumbs[1:4]  # up to 3 more
         main_url = build_image_url(main)
         main_title = get_filename(main)
+        main_full = items[0]["full"] if items else main_url
 
         parts.append('<div class="img-type-block">')
-        parts.append(f'<div class="img-type-heading">{escape(type_label)}</div>')
         parts.append(
-            f'<img src="{escape(main_url)}" '
-            f'title="{escape(main_title)}" '
-            'class="img-main" />'
+            f'<div class="img-type-heading">{escape(type_label)} '
+            f'<a href="#" class="img-all-link" '
+            f'onclick="showImgPopup(\'{escape(type_label)}\', \'{items_json}\'); return false;">'
+            f'all {n_images} images</a></div>'
         )
 
+        # Main image (wrapped in a link to the full image)
+        parts.append(
+            f'<a href="{escape(main_full)}" target="_blank">'
+            f'<img src="{escape(main_url)}" title="{escape(main_title)}" class="img-main" />'
+            f'</a>'
+        )
+
+        # Extra thumbnails (also wrapped links)
         if extras:
             parts.append('<div class="img-small-row">')
-            for t in extras:
+            for i, t in enumerate(extras, start=1):
                 url = build_image_url(t)
                 title = get_filename(t)
+                full_u = items[i]["full"] if i < len(items) else url
                 parts.append(
-                    f'<img src="{escape(url)}" '
-                    f'title="{escape(title)}" '
-                    'class="img-small" />'
+                    f'<a href="{escape(full_u)}" target="_blank">'
+                    f'<img src="{escape(url)}" title="{escape(title)}" class="img-small" />'
+                    f'</a>'
                 )
             parts.append("</div>")
 
-        parts.append("</div>")
+        parts.append("</div>")  # end type block
+
     return "\n".join(parts)
 
 
@@ -279,7 +406,6 @@ def main():
         URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"  # for jbs aws instance
     else:
         print('second argument required: local or aws', file = sys.stderr)
-        sys.exit(1)
 
     path = sys.argv[1]
     with open(path, encoding="utf-8", newline="") as f:
@@ -422,20 +548,13 @@ body {
 }
 
 
-/* ----- Page breaks + index ----- */
-.page-break { height: 0; margin: 0; border: 0; }
-.index-dl { columns: 3; column-gap: 24px; margin: 0; }
-.index-dl dt { font-weight: 700; break-inside: avoid; page-break-inside: avoid; margin-top: 8px; }
-.index-dl dd { margin: 0 0 8px 0; break-inside: avoid; page-break-inside: avoid; font-size: 0.95em; }
-
 /* ----- Print / PDF optimization ----- */
 @media print {
-    /* Start each site on a new page */
-    .site-card { break-before: page; page-break-before: always; }
-    .site-card:first-child { break-before: auto; page-break-before: auto; }
-    /* Explicit page-break markers for front/back matter */
+    /* Explicit page breaks + per-site pages */
     .page-break { break-after: page; page-break-after: always; }
-    .index-section { break-before: page; page-break-before: always; }
+    .site-card { break-before: page; page-break-before: always; }
+    .site-card:first-of-type { break-before: auto; page-break-before: auto; }
+    .img-popup-overlay { display: none !important; }
 
     @page {
         size: letter;
@@ -529,14 +648,12 @@ body {
 </style>
 ''')
     print("</head><body><div style='max-width:1200px; margin:0 auto;'>")
-    # Front matter
     print(render_front_matter())
+    print(render_index(rows))
+    print('<div class="page-break"></div>')
     for row in rows:
         print(render_site_div(row))
-    # Back matter index
-    print('<div class="page-break"></div>')
-    print(render_index(rows))
-
+    print(IMG_POPUP_OVERLAY)
     print("</div></body></html>")
 
 
