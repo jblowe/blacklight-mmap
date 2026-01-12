@@ -90,6 +90,7 @@ IMG_POPUP_OVERLAY = """
 <script>
 function hideImgPopup(){
   const o=document.getElementById("imgPopup");
+  o.classList.remove("open");
   o.style.display="none";
   o.setAttribute("aria-hidden","true");
   document.getElementById("imgPopupGrid").innerHTML="";
@@ -112,9 +113,13 @@ function showImgPopupB64(title, itemsB64){
   }
   const o=document.getElementById("imgPopup");
   o.style.display="block";
+  o.classList.add("open");
   o.setAttribute("aria-hidden","false");
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape") hideImgPopup(); });
+document.getElementById("imgPopup").addEventListener("click", function(e){
+  if(e.target && e.target.id==="imgPopup"){ hideImgPopup(); }
+});
 </script>
 """
 
@@ -332,7 +337,7 @@ def render_images_column(row: dict) -> str:
             full_path = files[i] if i < len(files) and files[i] else t
             items.append({
                 "thumb": build_image_url(t),
-                "full": build_image_url(full_path),
+                "full": build_image_url(t),
                 "title": get_filename(t)
             })
         items_b64 = base64.b64encode(json.dumps(items).encode("utf-8")).decode("ascii")
@@ -342,7 +347,7 @@ def render_images_column(row: dict) -> str:
         extras = thumbs[1:4]  # up to 3 more
         main_url = build_image_url(main)
         main_title = get_filename(main)
-        main_full = items[0]["full"] if items else main_url
+        main_full = main_url
 
         parts.append('<div class="img-type-block">')
         parts.append(
@@ -365,7 +370,7 @@ def render_images_column(row: dict) -> str:
             for i, t in enumerate(extras, start=1):
                 url = build_image_url(t)
                 title = get_filename(t)
-                full_u = items[i]["full"] if i < len(items) else url
+                full_u = url
                 parts.append(
                     f'<a href="{escape(full_u)}" target="_blank">'
                     f'<img src="{escape(url)}" title="{escape(title)}" class="img-small" />'
@@ -661,7 +666,8 @@ body {
 }
 </style>
 ''')
-    print("</head><body><div style='max-width:1200px; margin:0 auto;'>")
+    print("</head><body>")
+    print("<div style='max-width:1200px; margin:0 auto;'>")
     print(render_front_matter())
     print(render_index(rows))
     print('<div class="page-break"></div>')
