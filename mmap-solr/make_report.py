@@ -5,6 +5,7 @@ import csv
 import sys
 import html
 import json
+import base64
 from pathlib import Path
 import re
 from typing import Dict, List, Tuple
@@ -93,8 +94,9 @@ function hideImgPopup(){
   o.setAttribute("aria-hidden","true");
   document.getElementById("imgPopupGrid").innerHTML="";
 }
-function showImgPopup(title, itemsJson){
-  const items=JSON.parse(itemsJson);
+function showImgPopupB64(title, itemsB64){
+  const itemsJson = atob(itemsB64);
+  const items = JSON.parse(itemsJson);
   document.getElementById("imgPopupTitle").textContent=title;
   const grid=document.getElementById("imgPopupGrid");
   grid.innerHTML="";
@@ -333,7 +335,7 @@ def render_images_column(row: dict) -> str:
                 "full": build_image_url(full_path),
                 "title": get_filename(t)
             })
-        items_json = escape(json.dumps(items))
+        items_b64 = base64.b64encode(json.dumps(items).encode("utf-8")).decode("ascii")
         n_images = len(items)
 
         main = thumbs[0]
@@ -346,7 +348,7 @@ def render_images_column(row: dict) -> str:
         parts.append(
             f'<div class="img-type-heading">{escape(type_label)} '
             f'<a href="#" class="img-all-link" '
-            f'onclick="showImgPopup(\'{escape(type_label)}\', \'{items_json}\'); return false;">'
+            f'onclick="showImgPopupB64(\'{escape(type_label)}\', \'{escape(items_b64)}\'); return false;">'
             f'all {n_images} images</a></div>'
         )
 
@@ -538,7 +540,14 @@ body {
     gap: 4px;
 }
 
+.img-small-row a {
+    flex: 0 0 32%;
+    max-width: 32%;
+}
+
 .img-small {
+    width: 100%;
+    max-width: 100%;
     flex: 0 0 32%;
     max-width: 32%;
     border: 1px solid #ccc;
@@ -631,9 +640,14 @@ body {
         gap: 3px;
     }
 
-    .img-small {
+    .img-small-row a {
         flex: 0 0 32%;
         max-width: 32%;
+    }
+
+    .img-small {
+        width: 100%;
+        max-width: 100%;
     }
 
     .img-type-block:nth-of-type(n+3) {
