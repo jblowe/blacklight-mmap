@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -x
+# set -euo pipefail
 
 # md.sh — build "derivative" (thumbnail) images in a parallel directory tree.
 #
@@ -113,7 +114,9 @@ while IFS= read -r rel; do
     continue
   fi
 
-  CMD=(magick -density 200)
+  # on ubuntu, it's still called convert
+  # CMD=(magick -density 200)
+  CMD=(convert -density 200)
 
   if [[ "${ext_lc}" == "pdf" ]]; then
     CMD+=("${src}[0]")

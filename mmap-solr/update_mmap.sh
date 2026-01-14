@@ -5,6 +5,9 @@
 source /home/ubuntu/.profile
 cd /home/ubuntu/blacklight-mmap/mmap-solr/
 
+# update derivatives
+time ./make_derivatives.sh /mnt/images/LaosPhotos/originals /mnt/images/LaosPhotos/derivatives >> mmap-derivatives.txt 2>&1
+
 # concatenate all tablet GIS files together and process into postgres
 cat /mnt/images/MMAP_GIS_data/* > csvtoload.csv
 time ./loadpostgres.sh csvtoload.csv "$CONNECT_STRING" mapping-tablet-to-postgres.csv >> mmap-loadpostgres.txt 2>&1
