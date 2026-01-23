@@ -6,6 +6,7 @@ import sys
 import html
 import json
 import base64
+from datetime import datetime
 from pathlib import Path
 import re
 from typing import Dict, List, Tuple
@@ -38,6 +39,8 @@ def make_site_anchor(row: dict) -> str:
 def render_front_matter() -> str:
     # title page, then intro, each separated by an explicit page break
     title_html = read_snippet("title_page.html")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    title_html = title_html.replace("{DATE}", timestamp)
     intro_html = read_snippet("introduction.html")
     return "\n".join([
         '<div class="front-matter">', title_html, '</div>',
@@ -181,10 +184,18 @@ label_to_field: Dict[str, str] = {
     "Artifact Comments:": "artcomm_s",
 }
 
-
 # Image types (Map handled separately)
 IMAGE_TYPES: List[Tuple[str, str]] = [
-    ("General view", "General view_THUMBNAILS_ss"),
+    ("General View", "General view_THUMBNAILS_ss"),
+    ("Environment", "Environment_THUMBNAILS_ss"),
+    ("Feature", "Feature_THUMBNAILS_ss"),
+    ("Artifacts on site", "Artifacts on site_THUMBNAILS_ss"),
+    ("Action-process", "Action-process_THUMBNAILS_ss"),
+    ("Studio bag shot", "Studio bag shot_THUMBNAILS_ss"),
+    ("Studio artifact shot", "Studio artifact shot_THUMBNAILS_ss"),
+    ("Miscellaneous", "Miscellaneous_THUMBNAILS_ss"),
+    ("Speleothem", "Speleothem_THUMBNAILS_ss"),
+    ("Documents", "Documents_THUMBNAILS_ss"),
     ("Misc", "Misc_THUMBNAILS_ss"),
     ("Artifacts", "Artifacts_THUMBNAILS_ss"),
     ("People", "People_THUMBNAILS_ss"),

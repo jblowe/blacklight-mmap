@@ -11,7 +11,20 @@ grep site_name mmap-dbsites.csv | perl -pe 's/ +/_/g' > mmap-dbsites.header.csv
 
 # make a list of the site images and prep it for solr
 find "${DERIVATIVES}" -type f | grep -v DS_Store | grep -v extra_maps > sites0.tmp
-perl -ne 'chomp ; s#^.*?/derivatives/##;print;print "\t";s/Articts/Artifacts/;s#missing_site_name/#missing_site_name #;s/General [Vv]/General_v/;s#missing_site_name/#missing_site_name #;s#/#\t#g;s/ /\t/;print "$_\n"' sites0.tmp > sites1.tmp
+perl -ne 'chomp ;
+s#^.*?/derivatives/##;
+print;print "\t";
+s/Articts/Artifacts/;
+s/General [Vv]/General_v/;
+s#missing_site_name/#missing_site_name #;
+s#/#\t#g;
+s/ /\t/;
+s#Artifacts\tStudio Individual +Shot Art#Studio artifact shot#i;
+s#Artifacts\tStudio Bag Shot Artifact#Studio bag shot#i;
+s#Artifacts\tStudio Bag Shot Art#Studio bag shot#i;
+s#Artifacts\tIn situ Artifacts?#Artifacts on site#i;
+print "$_\n";' \
+sites0.tmp > sites1.tmp
 
 perl -ne 'print if /\.(jpg|jpeg|tif|gif|png|webp)/i' sites1.tmp > sites2.tmp
 cat mmap-site-photos.header.csv sites2.tmp > mmap-site-photos.csv
