@@ -101,25 +101,45 @@ function hideImgPopup(){
 function showImgPopupB64(title, itemsB64){
   const itemsJson = atob(itemsB64);
   const items = JSON.parse(itemsJson);
-  document.getElementById("imgPopupTitle").textContent=title;
-  const grid=document.getElementById("imgPopupGrid");
-  grid.innerHTML="";
+
+  const w = window.open("about:blank", "_blank");
+  try { if(w) { w.opener = null; } } catch(e) {}
+  if(!w){ return true; }
+
+  const esc = (s)=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+  let h = "";
+  h += "<!DOCTYPE html><html><head><meta charset='utf-8'><title>"+esc(title)+"</title>";
+  h += "<style>";
+  h += "body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;margin:16px;}";
+  h += "h1{font-size:18px;margin:0 0 12px 0;}";
+  h += ".grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}";
+  h += "a{display:block;text-decoration:none;color:inherit;}";
+  h += "img{width:100%;height:auto;border:1px solid #ccc;border-radius:2px;padding:2px;}";
+    h += "</style></head><body>";
+  h += "<h1>"+esc(title)+"</h1>";
+  h += "<div class='grid'>";
   for(const it of items){
-    const a=document.createElement("a");
-    a.href=it.full;
-    a.target="_blank";
-    const img=document.createElement("img");
-    img.src=it.thumb;
-    img.title=it.title || "";
-    a.appendChild(img);
-    grid.appendChild(a);
+    const full = esc(it.full);
+    const thumb = esc(it.thumb);
+    const t = esc(it.title||"");
+    h += "<a href='"+full+"' target='_blank'><img src='"+thumb+"' title='"+t+"'></a>";
   }
-  const o=document.getElementById("imgPopup");
-  o.style.display="block";
-  o.classList.add("open");
-  o.setAttribute("aria-hidden","false");
+  h += "</div></body></html>";
+
+  w.document.open();
+  w.document.write(h);
+  w.document.close();
+  return false;
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape") hideImgPopup(); });
+/* Ensure overlay is attached directly to <body> so it truly overlays */
+document.addEventListener("DOMContentLoaded", function(){
+  const o = document.getElementById("imgPopup");
+  if(o && o.parentElement && o.parentElement !== document.body){
+    document.body.appendChild(o);
+  }
+});
 document.getElementById("imgPopup").addEventListener("click", function(e){
   if(e.target && e.target.id==="imgPopup"){ hideImgPopup(); }
 });
@@ -361,18 +381,22 @@ def render_images_column(row: dict) -> str:
         main_full = main_url
 
         parts.append('<div class="img-type-block">')
+        site_name = (row.get("site_name_s") or "").strip()
+        popup_title = f"{site_name}, {n_images} {type_label} images"
+
         parts.append(
-            f'<div class="img-type-heading">{escape(type_label)} '
+            f'<div class="img-type-heading">{escape(type_label)}</div>'
+            f'<div class="img-all-wrap">'
             f'<a href="#" class="img-all-link" '
-            f'onclick="showImgPopupB64(\'{escape(type_label)}\', \'{escape(items_b64)}\'); return false;">'
-            f'all {n_images} images</a></div>'
+            f'onclick="showImgPopupB64(\'{escape(popup_title)}\', \'{escape(items_b64)}\'); return false;">'
+            f'all {n_images} images</a>'
         )
 
         # Main image (wrapped in a link to the full image)
         parts.append(
             f'<a href="{escape(main_full)}" target="_blank">'
             f'<img src="{escape(main_url)}" title="{escape(main_title)}" class="img-main" />'
-            f'</a>'
+            f'</a></div>'
         )
 
         # Extra thumbnails (also wrapped links)
@@ -409,6 +433,140 @@ def render_site_div(row: dict) -> str:
 </div>
 '''.strip()
 
+
+
+def render_index_alpha(rows: List[dict]) -> str:
+    """
+    Index of sites in alphabetical order, rendered in as many columns as needed,
+    with a maximum of 60 rows per column.
+    Each entry: Site Name (link to article) + coordinates (if any, link to Google Maps).
+    """
+    items = []
+    for row in rows:
+        site = (row.get("site_name_s") or "").strip() or "(Unnamed site)"
+        anchor = make_site_anchor(row)
+
+        lat_raw = (row.get("point_y_s") or "").strip()
+        lon_raw = (row.get("point_x_s") or "").strip()
+        lat = lon = None
+        try:
+            if lat_raw and lon_raw:
+                lat = float(lat_raw)
+                lon = float(lon_raw)
+        except ValueError:
+            lat = lon = None
+
+        items.append((site, anchor, lat, lon))
+
+    items.sort(key=lambda x: x[0].lower())
+
+    max_rows = 60
+    ncols = max(1, (len(items) + max_rows - 1) // max_rows)
+
+    cols = []
+    for c in range(ncols):
+        cols.append(items[c*max_rows:(c+1)*max_rows])
+
+    parts = []
+    parts.append('<div class="index-section">')
+    parts.append('<h1 class="sec-heading">Sites in alphabetical order</h1>')
+    parts.append('<table class="alpha-index-table"><tr>')
+
+    for col in cols:
+        parts.append('<td class="alpha-index-col"><ul class="alpha-index-ul">')
+        for site, anchor, lat, lon in col:
+            site_link = f'<a href="#{escape(anchor)}">{escape(site)}</a>'
+            if lat is not None and lon is not None:
+                g = f'https://www.google.com/maps?q={lat:.6f},{lon:.6f}&z=14'
+                coord_link = f' <span class="alpha-coords">(<a href="{escape(g)}" target="_blank">{lat:.6f}, {lon:.6f}</a>)</span>'
+            else:
+                coord_link = ''
+            parts.append(f'<li>{site_link}{coord_link}</li>')
+        parts.append('</ul></td>')
+    parts.append('</tr></table>')
+    parts.append('</div>')
+    return "\n".join(parts)
+
+
+def render_all_sites_map(rows: List[dict]) -> str:
+    """
+    Full-page interactive map of ALL sites with coordinates (Leaflet + OSM tiles).
+    Uses a <script type="application/json"> block to safely embed data (no quoting issues).
+    """
+    pts = []
+    for row in rows:
+        lat_raw = (row.get("point_y_s") or "").strip()
+        lon_raw = (row.get("point_x_s") or "").strip()
+        if not lat_raw or not lon_raw:
+            continue
+        try:
+            lat = float(lat_raw)
+            lon = float(lon_raw)
+        except ValueError:
+            continue
+
+        site = (row.get("site_name_s") or "").strip() or "(Unnamed site)"
+        anchor = make_site_anchor(row)
+        pts.append({"site": site, "anchor": anchor, "lat": lat, "lon": lon})
+
+    if not pts:
+        return '<div class="index-section"><h1 class="sec-heading">All Sites Map</h1><p>No coordinates found.</p></div>'
+
+    pts_json = json.dumps(pts)
+
+    parts = []
+    parts.append('<div class="index-section">')
+    parts.append('<h1 class="sec-heading">All Sites Map</h1>')
+    parts.append('<div class="map-note">Interactive map (pan/zoom). Markers link to the site entry and to Google Maps.</div>')
+    parts.append('<div id="allSitesMap" class="all-sites-map"></div>')
+    parts.append('<script id="all-sites-data" type="application/json">')
+    parts.append(pts_json)
+    parts.append('</script>')
+    parts.append('<script>')
+    parts.append("""
+(function(){
+  function init(){
+    if(typeof L === "undefined"){ return; }
+    var dataEl = document.getElementById("all-sites-data");
+    if(!dataEl){ return; }
+    var ALL_SITES = JSON.parse(dataEl.textContent);
+
+    var map = L.map("allSitesMap", { zoomControl: true });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var bounds = [];
+    for(var i=0;i<ALL_SITES.length;i++){
+      var p = ALL_SITES[i];
+      var ll = [p.lat, p.lon];
+      bounds.push(ll);
+
+      var g = "https://www.google.com/maps?q=" + p.lat + "," + p.lon + "&z=14";
+      var html = ''
+        + '<div style="font-weight:700; margin-bottom:4px;">' + p.site + '</div>'
+        + '<div><a href="#' + p.anchor + '">Open in report</a></div>'
+        + '<div><a href="' + g + '" target="_blank">Open in Google Maps</a></div>';
+
+      L.marker(ll).addTo(map).bindPopup(html);
+    }
+    if(bounds.length){
+      map.fitBounds(bounds, { padding: [20,20] });
+    } else {
+      map.setView([0,0], 2);
+    }
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+""")
+    parts.append('</script>')
+    parts.append('</div>')
+    return "\n".join(parts)
 
 def main():
 
@@ -538,10 +696,11 @@ body {
 .img-type-heading {
     font-weight: bold;
     margin-bottom: 4px;
+    float: left;
 }
 
 .img-main {
-    max-width: 100%;
+    width: 100%;
     height: auto;
     max-height: 500px;
     border: 1px solid #ccc;
@@ -553,25 +712,28 @@ body {
 .img-small-row {
     margin-top: 6px;
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 .img-small-row a {
-    flex: 0 0 32%;
-    max-width: 32%;
+    flex: 0 0 calc((100% - 12px)/3);
+    max-width: calc((100% - 12px)/3);
+    display: block;
 }
 
 .img-small {
     width: 100%;
     max-width: 100%;
-    flex: 0 0 32%;
-    max-width: 32%;
     border: 1px solid #ccc;
     border-radius: 2px;
     height: auto;
     padding: 2px;
 }
 
+.img-all-wrap {
+  text-align: right;
+  margin-bottom: 4px;
+}
 
 /* ----- Print / PDF optimization ----- */
 @media print {
@@ -579,7 +741,7 @@ body {
     .page-break { break-after: page; page-break-after: always; }
     .site-card { break-before: page; page-break-before: always; }
     .site-card:first-of-type { break-before: auto; page-break-before: auto; }
-    .img-popup-overlay { display: none !important; }
+    .img-popup-overlay { display: none; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2147483647; }
 
     @page {
         size: letter;
@@ -637,6 +799,9 @@ body {
     .geo-iframe {
         display: none !important;
     }
+    .all-sites-iframe { width: 1000px; max-width: 100%; height: 75vh; border: 0; display: block; margin: 0 auto; }
+    .all-sites-map { width: 1000px; max-width: 100%; height: calc(100vh - 180px); min-height: 700px; border: 1px solid #ccc; margin: 0 auto; }
+    .map-note { font-size: 0.95em; margin: 8px 0 10px 0; }
 
     .geo-link {
         display: block;
@@ -652,19 +817,25 @@ body {
     }
 
     .img-small-row {
-        display: flex;
-        gap: 3px;
-    }
+    margin-top: 6px;
+    display: flex;
+    gap: 6px;
+}
 
-    .img-small-row a {
-        flex: 0 0 32%;
-        max-width: 32%;
-    }
+.img-small-row a {
+    flex: 0 0 calc((100% - 12px)/3);
+    max-width: calc((100% - 12px)/3);
+    display: block;
+}
 
-    .img-small {
-        width: 100%;
-        max-width: 100%;
-    }
+.img-small {
+    width: 100%;
+    max-width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    height: auto;
+    padding: 2px;
+}
 
     .img-type-block:nth-of-type(n+3) {
         display: none !important;
@@ -681,6 +852,10 @@ body {
     print("<div style='max-width:1200px; margin:0 auto;'>")
     print(render_front_matter())
     print(render_index(rows))
+    print('<div class="page-break"></div>')
+    print(render_all_sites_map(rows))
+    print('<div class="page-break"></div>')
+    print(render_index_alpha(rows))
     print('<div class="page-break"></div>')
     for row in rows:
         print(render_site_div(row))
