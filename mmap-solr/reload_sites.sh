@@ -18,11 +18,13 @@ s/Articts/Artifacts/;
 s/General [Vv]/General_v/;
 s#missing_site_name/#missing_site_name #;
 s#/#\t#g;
+# only do this once per line to insert a tab between data and site name
 s/ /\t/;
-s#Artifacts\tStudio Individual +Shot Art#Studio artifact shot#i;
-s#Artifacts\tStudio Bag Shot Artifact#Studio bag shot#i;
-s#Artifacts\tStudio Bag Shot Art#Studio bag shot#i;
-s#Artifacts\tIn situ Artifacts?#Artifacts on site#i;
+s/\t\d+\. /\t/;
+s#Artifacts\tStudio Individual +Shot Art#Studio_artifact_shot#i;
+s#Artifacts\tStudio Bag Shot Artifact#Studio_bag_shot#i;
+s#Artifacts\tStudio Bag Shot Art#Studio_bag_shot#i;
+s#Artifacts\tIn situ Artifacts?#Artifacts_on_site#i;
 print "$_\n";' \
 sites0.tmp > sites1.tmp
 
