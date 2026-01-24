@@ -102,7 +102,7 @@ while IFS= read -r rel; do
   ext="${rel##*.}"
   ext_lc="$(printf '%s' "${ext}" | tr '[:upper:]' '[:lower:]')"
 
-  if [[ "${ext_lc}" == "pdf" ]]; then
+  if [[ "${ext_lc}" == "pdf" || "${ext_lc}" == "tif" ]]; then
     out_rel="${rel%.*}.jpg"
   fi
 
