@@ -154,6 +154,7 @@ label_to_field: Dict[str, str] = {
     "Site:": "site_name_s",
     "Description:": "sitedesc_s",
     "Date Recorded:": "year_recorded_s",
+    "Visit date:": "site_date_s",
     "Access:": "acces_s",
     "Nearest Village:": "vill_name_s",
     "Closest River:": "nrprimrv_s",
