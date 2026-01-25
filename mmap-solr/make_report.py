@@ -12,10 +12,7 @@ import re
 from typing import Dict, List, Tuple
 
 
-URL_PREFIX = "https://mmap.org"   # set this as needed for your thumbnails
-
-
-# --- Front/back matter --------------------------------------------------------
+# --- Front/back matter
 
 def read_snippet(path: str) -> str:
     """
@@ -78,10 +75,10 @@ def render_index(rows: List[dict]) -> str:
     return "\n".join(parts)
 
 
-# --- Image popout overlay -----------------------------------------------------
+# --- Image popout overlay
 
 IMG_POPUP_OVERLAY = """
-<div id="imgPopup" class="img-popup-overlay" aria-hidden="true">
+<div id="imgPopup">
   <div class="img-popup-panel">
     <div class="img-popup-topbar">
       <div id="imgPopupTitle" style="font-weight:700;"></div>
@@ -146,8 +143,7 @@ document.getElementById("imgPopup").addEventListener("click", function(e){
 </script>
 """
 
-
-# === LABEL → FIELD MAPPING ====================================================
+# === LABEL → FIELD MAPPING
 label_to_field: Dict[str, str] = {
     # --- Site Info ---
     "Site Info": "heading",
@@ -435,7 +431,6 @@ def render_site_div(row: dict) -> str:
 '''.strip()
 
 
-
 def render_index_alpha(rows: List[dict]) -> str:
     """
     Index of sites in alphabetical order, rendered in as many columns as needed,
@@ -466,7 +461,7 @@ def render_index_alpha(rows: List[dict]) -> str:
 
     cols = []
     for c in range(ncols):
-        cols.append(items[c*max_rows:(c+1)*max_rows])
+        cols.append(items[c * max_rows:(c + 1) * max_rows])
 
     parts = []
     parts.append('<div class="index-section">')
@@ -569,10 +564,10 @@ def render_all_sites_map(rows: List[dict]) -> str:
     parts.append('</div>')
     return "\n".join(parts)
 
-def main():
 
+def main():
     if len(sys.argv) != 3:
-        print("Usage: python make_report.py merged_sites.tsv <local|aws> > report.html", file = sys.stderr)
+        print("Usage: python make_report.py merged_sites.tsv <local|aws> > report.html", file=sys.stderr)
         sys.exit(1)
 
     global URL_PREFIX
@@ -582,7 +577,7 @@ def main():
     elif 'aws' in sys.argv[2].lower():
         URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"  # for jbs aws instance
     else:
-        print('second argument required: local or aws', file = sys.stderr)
+        print('second argument required: local or aws', file=sys.stderr)
 
     path = sys.argv[1]
     with open(path, encoding="utf-8", newline="") as f:
@@ -593,260 +588,59 @@ def main():
     print("<title>Site Report</title>")
     print(r'''
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-                 'Helvetica Neue', Arial, sans-serif;
-    background: #f8f9fa;
-    padding: 16px;
-    font-size: 14px;
-}
-
-.site-card {
-    background: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
-
-.site-title {
-    margin: 0 0 12px 0;
-    font-size: 1.4rem;
-}
-
-.row-flex {
-    display: flex;
-    gap: 16px;
-}
-
-.col-left,
-.col-right {
-    width: 50%;
-}
-
+body { font-family: -apple-system, Roboto, Arial, sans-serif; background: #f8f9fa; padding: 16px; font-size: 14px; }
+.site-card { background: #fff; border: none; border-radius: 4px; padding: 12px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.site-title { margin: 0 0 12px 0; font-size: 1.4rem; }
+.row-flex { display: flex; gap: 16px; }
+.col-left, .col-right { width: 50%; }
 /* ----- Section Headings ----- */
-.sec-heading {
-    margin: 10px 0 4px 0;
-    padding-bottom: 3px;
-    border-bottom: 1px solid #ddd;
-    font-size: 1.1rem;
-}
-
+.sec-heading { margin: 10px 0 4px 0; padding-bottom: 3px; border-bottom: 1px solid #ddd; font-size: 1.1rem; }
 /* ----- Metadata tables ----- */
-.meta-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 8px;
-}
-
-.meta-table-inner {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.meta-label {
-    text-align: left;
-    vertical-align: top;
-    width: 40%;
-    padding: 3px 4px;
-    font-weight: 600;
-}
-
-.meta-value {
-    vertical-align: top;
-    padding: 3px 4px;
-}
-
+.meta-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.meta-table-inner { width: 100%; border-collapse: collapse; }
+.meta-label { text-align: left; vertical-align: top; width: 40%; padding: 3px 4px; font-weight: 600; }
+.meta-value { vertical-align: top; padding: 3px 4px; }
 /* ----- Geo section extras ----- */
-.geo-meta-cell {
-    vertical-align: top;
-    padding-right: 6px;
-}
-
-.geo-extra {
-    vertical-align: top;
-    width: 30%;
-    padding-left: 6px;
-}
-
-.geo-map-thumb {
-    max-width: 130px;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    padding: 2px;
-    margin-bottom: 6px;
-}
-
-.geo-iframe {
-    width: 130px;
-    height: 130px;
-    border: 0;
-    margin-bottom: 4px;
-}
-
-.geo-link {
-    font-size: 0.85rem;
-}
-
+.geo-meta-cell { vertical-align: top; padding-right: 6px; }
+.geo-extra { vertical-align: top; width: 30%; padding-left: 6px; }
+.geo-map-thumb { max-width: 130px; border: 1px solid #ccc; border-radius: 2px; padding: 2px; margin-bottom: 6px; }
+.geo-iframe { width: 130px; height: 130px; border: 0; margin-bottom: 4px; }
+.geo-link { font-size: 0.85rem; }
 /* ----- Image column ----- */
-.img-type-block {
-    margin-bottom: 20px;
-}
-
-.img-type-heading {
-    font-weight: bold;
-    margin-bottom: 4px;
-    float: left;
-}
-
-.img-main {
-    width: 100%;
-    height: auto;
-    max-height: 500px;
-    border: 1px solid #ccc;
-    padding: 2px;
-    border-radius: 2px;
-    object-fit: contain;
-}
-
-.img-small-row {
-    margin-top: 6px;
-    display: flex;
-    gap: 6px;
-}
-
-.img-small-row a {
-    flex: 0 0 calc((100% - 12px)/3);
-    max-width: calc((100% - 12px)/3);
-    display: block;
-}
-
-.img-small {
-    width: 100%;
-    max-width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    height: auto;
-    padding: 2px;
-}
-
-.img-all-wrap {
-  text-align: right;
-  margin-bottom: 4px;
-}
-
+.img-type-block { margin-bottom: 20px; }
+.img-type-heading { font-weight: bold; margin-bottom: 4px; float: left; }
+.img-main { width: 100%; height: auto; max-height: 500px; border: 1px solid #ccc; padding: 2px; border-radius: 2px; object-fit: contain; }
+.img-small-row { margin-top: 6px; display: flex; gap: 6px; }
+.img-small-row a { flex: 0 0 calc((100% - 12px)/3); max-width: calc((100% - 12px)/3); display: block; }
+.img-small { width: 100%; max-width: 100%; border: 1px solid #ccc; border-radius: 2px; height: auto; padding: 2px; }
+.img-all-wrap { text-align: right; margin-bottom: 4px; }
 /* ----- Print / PDF optimization ----- */
 @media print {
-    /* Explicit page breaks + per-site pages */
     .page-break { break-after: page; page-break-after: always; }
     .site-card { break-before: page; page-break-before: always; }
     .site-card:first-of-type { break-before: auto; page-break-before: auto; }
-    .img-popup-overlay { display: none; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2147483647; }
-
-    @page {
-        size: letter;
-        margin: 0.5in;
-    }
-
-    body {
-        background: #ffffff;
-        padding: 0;
-        font-size: 11px;
-    }
-
-    .site-card {
-        box-shadow: none;
-        border: none;
-        margin-bottom: 10px;
-        page-break-inside: avoid;
-    }
-
-    .row-flex {
-        flex-direction: row;
-        gap: 6px;
-    }
-
-    .col-left,
-    .col-right {
-        width: 50%;
-    }
-
-    .site-title {
-        font-size: 1.0rem;
-        margin-bottom: 6px;
-    }
-
-    .sec-heading {
-        font-size: 0.9rem;
-        margin: 4px 0 2px 0;
-        padding-bottom: 1px;
-    }
-
-    .meta-label,
-    .meta-value {
-        padding: 1px 2px;
-        font-size: 0.85em;
-    }
-
-    .meta-table {
-        margin-bottom: 3px;
-    }
-
-    .geo-map-thumb {
-        max-width: 90px;
-    }
-
-    .geo-iframe {
-        display: none !important;
-    }
+    @page { size: letter; margin: 0.5in; }
+    body { background: #ffffff; padding: 0; font-size: 11px; }
+    .site-card { box-shadow: none; border: none; margin-bottom: 10px; page-break-inside: avoid; }
+    .row-flex { flex-direction: row; gap: 6px; }
+    .col-left, .col-right { width: 50%; }
+    .site-title { font-size: 1.0rem; margin-bottom: 6px; }
+    .sec-heading { font-size: 0.9rem; margin: 4px 0 2px 0; padding-bottom: 1px; }
+    .meta-label, .meta-value { padding: 1px 2px; font-size: 0.85em; }
+    .meta-table { margin-bottom: 3px; }
+    .geo-map-thumb { max-width: 90px; }
+    .geo-iframe { display: none !important; }
     .all-sites-iframe { width: 1000px; max-width: 100%; height: 75vh; border: 0; display: block; margin: 0 auto; }
     .all-sites-map { width: 1000px; max-width: 100%; height: calc(100vh - 180px); min-height: 700px; border: 1px solid #ccc; margin: 0 auto; }
     .map-note { font-size: 0.95em; margin: 8px 0 10px 0; }
-
-    .geo-link {
-        display: block;
-        font-size: 0.8rem;
-        margin-top: 3px;
-        text-decoration: underline;
+    .geo-link { display: block; font-size: 0.8rem; margin-top: 3px; text-decoration: underline; }
+    .img-main { max-width: 100%; max-height: 5in; object-fit: contain; }
+    .img-small-row { margin-top: 6px; display: flex; gap: 6px; }
+    .img-small-row a { flex: 0 0 calc((100% - 12px)/3); max-width: calc((100% - 12px)/3); display: block; }
+    .img-small { width: 100%; max-width: 100%; border: 1px solid #ccc; border-radius: 2px; height: auto; padding: 2px; }
+    .img-type-block:nth-of-type(n+3) { display: none !important; }
+    a { color: #000; text-decoration: underline; }
     }
-
-    .img-main {
-        max-width: 100%;
-        max-height: 5in;
-        object-fit: contain;
-    }
-
-    .img-small-row {
-    margin-top: 6px;
-    display: flex;
-    gap: 6px;
-}
-
-.img-small-row a {
-    flex: 0 0 calc((100% - 12px)/3);
-    max-width: calc((100% - 12px)/3);
-    display: block;
-}
-
-.img-small {
-    width: 100%;
-    max-width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    height: auto;
-    padding: 2px;
-}
-
-    .img-type-block:nth-of-type(n+3) {
-        display: none !important;
-    }
-
-    a {
-        color: #000;
-        text-decoration: underline;
-    }
-}
 </style>
 ''')
     print("</head><body>")
