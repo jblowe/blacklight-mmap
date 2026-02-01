@@ -23,6 +23,7 @@ s#/#\t#g;
 # only do this once per line to insert a tab between data and site name
 s/ /\t/;
 s/\t\d+\. /\t/;
+s#(Artifacts\t)?Studio Artifacts shot#Studio_artifact_shot#i;
 s#(Artifacts\t)?Studio Individual +Shot Art#Studio_artifact_shot#i;
 s#(Artifacts\t)?Studio Bag Shot Artifact#Studio_bag_shot#i;
 s#(Artifacts\t)?Studio Bag Shot Art#Studio_bag_shot#i;
