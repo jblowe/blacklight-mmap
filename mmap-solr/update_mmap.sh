@@ -19,5 +19,5 @@ time ./solrETL-artifacts.sh mmap >> mmap-reload-artifacts.txt 2>&1
 # reload sites solr core
 time ./reload_sites.sh ${PHOTO_DIR}/derivatives >> mmap-reload-sites.txt 2>&1
 
-# regenerate site catalog
-python make_report.py mmap-sites.csv aws > /var/www/html/site_report.html
+# regenerate site catalog, but leave it in the runtime directory
+python make_report.py mmap-sites.csv aws > site_report.html
