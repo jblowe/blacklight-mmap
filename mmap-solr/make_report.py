@@ -203,7 +203,7 @@ label_to_field: Dict[str, str] = {
 
 # Image types (Map handled separately)
 IMAGE_TYPES: List[Tuple[str, str]] = [
-    ("General View", "General_view_THUMBNAILS_ss"),
+    ("General view", "General_view_THUMBNAILS_ss"),
     ("Environment", "Environment_THUMBNAILS_ss"),
     ("Feature", "Feature_THUMBNAILS_ss"),
     ("Artifacts on site", "Artifacts_on_site_THUMBNAILS_ss"),

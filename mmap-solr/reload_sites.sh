@@ -5,7 +5,7 @@ if [ ! "${CONNECT_STRING}" ]; then
   exit 1
 fi
 psql -R"@@" -A -d "$CONNECT_STRING" -f extract_sites.sql | \
-perl -pe 's/[\r\n\t]/ /g;s/\|/\t/g;s/\@\@/\n/g' > mmap-dbsites.csv
+  perl -pe 's/[\r\n\t]/ /g;s/\|/\t/g;s/\@\@/\n/g' > mmap-dbsites.csv
 perl -i -pe 'if (/Site_Name/) {s/\t/_s\t/g;s/$/_s/;s/Record_No_s/id/;tr/A-Z/a-z/;s/ /_/g;s/\?//g;}' mmap-dbsites.csv
 grep site_name mmap-dbsites.csv | perl -pe 's/ +/_/g' > mmap-dbsites.header.csv
 
