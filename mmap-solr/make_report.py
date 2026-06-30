@@ -575,7 +575,7 @@ def main():
     if 'local' in sys.argv[2].lower():
         URL_PREFIX = "http://localhost:3002/mmap-images/"  # for local infrared server
     elif 'aws' in sys.argv[2].lower():
-        URL_PREFIX = "https://mmap-infrared.johnblowe.com/mmap-images/"  # for jbs aws instance
+        URL_PREFIX = "https://mmap-sites.johnblowe.com/mmap-images/"  # for jbs aws instance
     else:
         print('second argument required: local or aws', file=sys.stderr)
 
