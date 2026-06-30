@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Flask runtime / instance data: server-side sessions, the per-table config,
+# and the per-database crosswalk files are all generated at runtime.
+instance/
+
+# Local data / backups
+*.bak
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store

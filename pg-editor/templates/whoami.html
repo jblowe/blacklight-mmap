@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-3">Connection info</h3>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Database</dt><dd class="col-sm-9">{{ ident.get('db','') }}</dd>
+      <dt class="col-sm-3">User</dt><dd class="col-sm-9">{{ ident.get('usr','') }}</dd>
+      <dt class="col-sm-3">Schema</dt><dd class="col-sm-9">{{ ident.get('schema','') }}</dd>
+      <dt class="col-sm-3">Server</dt><dd class="col-sm-9">{{ ident.get('server_addr','') }}:{{ ident.get('server_port','') }}</dd>
+    </dl>
+  </div>
+</div>
+
+{% if schema_info %}
+<div class="alert alert-secondary">
+  Schema <code>{{ schema_info.get('schema') }}</code>:
+  <strong>{{ schema_info.get('table_count', 0) }}</strong> tables
+  ({% if schema_info.get('source') == 'crosswalk' %}loaded from crosswalk file{% else %}introspected{% endif %}).<br>
+  Crosswalk file: <code>{{ schema_info.get('path') }}</code>
+</div>
+{% endif %}
+
+{% endblock %}

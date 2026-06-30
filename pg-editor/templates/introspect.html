@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row">
+  <div class="col-12 col-lg-8">
+    <h3 class="mb-3">Introspect database</h3>
+
+    <p class="text-muted">
+      Read the table and column structure directly from the connected database and
+      save it as this database's crosswalk file. The app uses that file on future
+      logins; re-introspect here whenever the schema has changed.
+    </p>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Database</dt>
+          <dd class="col-sm-9">{{ ident.get('db','') }}{% if ident.get('usr') %} (as {{ ident.get('usr') }}){% endif %}</dd>
+          <dt class="col-sm-3">Schema</dt>
+          <dd class="col-sm-9"><code>{{ schema }}</code></dd>
+          <dt class="col-sm-3">Crosswalk file</dt>
+          <dd class="col-sm-9">
+            <code>{{ crosswalk_path }}</code>
+            {% if crosswalk_exists %}
+              <span class="badge text-bg-success ms-1">exists</span>
+            {% else %}
+              <span class="badge text-bg-secondary ms-1">not yet created</span>
+            {% endif %}
+          </dd>
+          <dt class="col-sm-3">Currently loaded</dt>
+          <dd class="col-sm-9">{{ table_count }} tables, {{ column_count }} columns</dd>
+        </dl>
+      </div>
+    </div>
+
+    <form method="post" action="{{ url_for('introspect_run') }}"
+          onsubmit="return confirm('Re-introspect the database and overwrite the crosswalk file?');">
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-arrow-repeat me-1"></i>Re-introspect &amp; overwrite
+      </button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('tables') }}">Back to tables</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

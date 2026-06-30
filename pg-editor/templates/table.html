@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h3 class="mb-0">{{ table_name }}</h3>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('tables') }}"><i class="bi bi-arrow-left me-1"></i>Back</a>
+    </div>
+
+    <ul class="nav nav-tabs mt-3">
+      <li class="nav-item">
+        <a class="nav-link {% if tab=='view' %}active{% endif %}" href="{{ url_for('table_page', table_name=table_name, tab='view') }}">View</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if tab=='edit' %}active{% endif %}" href="{{ url_for('table_page', table_name=table_name, tab='edit') }}">Edit</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if tab=='configure' %}active{% endif %}" href="{{ url_for('table_page', table_name=table_name, tab='configure') }}">Configure</a>
+      </li>
+    </ul>
+
+    <div class="tab-content border border-top-0 rounded-bottom p-3">
+
+      {% if tab == 'view' %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="text-muted small">
+            {% if total is not none %}
+              Showing {{ (page-1)*page_size + 1 }}–{{ (page-1)*page_size + rows|length }} of {{ total }}
+            {% endif %}
+          </div>
+
+          <div class="btn-group">
+            <a class="btn btn-outline-secondary btn-sm {% if page<=1 %}disabled{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='view', page=1) }}"
+               title="First">
+              <i class="bi bi-chevron-bar-left"></i>
+            </a>
+            <a class="btn btn-outline-secondary btn-sm {% if page<=1 %}disabled{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='view', page=page-1) }}"
+               title="Previous">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+            <a class="btn btn-outline-secondary btn-sm {% if total is not none and (page*page_size) >= total %}disabled{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='view', page=page+1) }}"
+               title="Next">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+            <a class="btn btn-outline-secondary btn-sm {% if not last_page or page>=last_page %}disabled{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='view', page=last_page) }}"
+               title="Last">
+              <i class="bi bi-chevron-bar-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover align-middle table-fixed">
+            <thead>
+              <tr>
+                <th style="width: 100px;">{{ PK_NAME }}</th>
+                {% for c in columns if c.name in view_cols %}
+                  <th>{{ c.label }}</th>
+                {% endfor %}
+                <th style="width: 70px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in rows %}
+                <tr>
+                  <td class="text-muted">{{ r[PK_NAME] }}</td>
+                  {% for c in columns if c.name in view_cols %}
+                    <td title="{{ r.get(c.name) }}">{{ r.get(c.name) }}</td>
+                  {% endfor %}
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{{ url_for('table_page', table_name=table_name, tab='edit', record=r[PK_NAME]) }}">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+              {% if rows|length == 0 %}
+                <tr><td colspan="100" class="text-muted">No rows.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+
+      {% if tab == 'edit' %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Edit mode">
+            <a class="btn btn-outline-primary {% if editmode != 'grid' %}active{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='form', record=record_no) }}">
+              <i class="bi bi-card-text me-1"></i>Form
+            </a>
+            <a class="btn btn-outline-primary {% if editmode == 'grid' %}active{% endif %}"
+               href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid') }}">
+              <i class="bi bi-table me-1"></i>Table
+            </a>
+          </div>
+        </div>
+
+        {% if editmode == 'grid' %}
+          {% set has_prev = page > 1 %}
+          {% set has_next = grid_pages and page < grid_pages %}
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+            <div class="text-muted small">
+              {% if grid_total %}
+                Showing <strong>{{ grid_start }}</strong>–<strong>{{ grid_end }}</strong> of <strong>{{ grid_total }}</strong>
+              {% else %}
+                No rows
+              {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="btn-group">
+                <a class="btn btn-outline-secondary btn-sm {% if not has_prev %}disabled{% endif %}"
+                   href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid', page=1, per_page=per_page) }}" title="First">
+                  <i class="bi bi-chevron-bar-left"></i>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm {% if not has_prev %}disabled{% endif %}"
+                   href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid', page=page-1, per_page=per_page) }}" title="Previous">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm {% if not has_next %}disabled{% endif %}"
+                   href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid', page=page+1, per_page=per_page) }}" title="Next">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm {% if not grid_pages or page >= grid_pages %}disabled{% endif %}"
+                   href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid', page=grid_pages, per_page=per_page) }}" title="Last">
+                  <i class="bi bi-chevron-bar-right"></i>
+                </a>
+              </div>
+              <span class="text-muted small">Page {{ page }}{% if grid_pages %} of {{ grid_pages }}{% endif %}</span>
+              <select class="form-select form-select-sm w-auto" aria-label="Rows per page"
+                      onchange="if(this.value) location.href=this.value;">
+                {% for n in per_page_options %}
+                  <option value="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='grid', page=1, per_page=n) }}"
+                          {% if n == per_page %}selected{% endif %}>{{ n }} / page</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <form method="post" action="{{ url_for('table_save_grid', table_name=table_name) }}">
+            <input type="hidden" name="page" value="{{ page }}">
+            <input type="hidden" name="per_page" value="{{ per_page }}">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 90px;">{{ PK_NAME }}</th>
+                    {% for c in columns if c.name in edit_cols %}
+                      <th>{{ c.label }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in grid_rows %}
+                    {% set pk = r[PK_NAME] %}
+                    <tr>
+                      <td class="text-muted">
+                        <input type="hidden" name="pk" value="{{ pk }}">
+                        <a href="{{ url_for('table_page', table_name=table_name, tab='edit', editmode='form', record=pk) }}" title="Open in form">{{ pk }}</a>
+                      </td>
+                      {% for c in columns if c.name in edit_cols %}
+                        {% set itype = input_type_for_pg(c.data_type) %}
+                        {% set val = r.get(c.name) %}
+                        <td>
+                          {% if itype == 'checkbox' %}
+                            <input type="hidden" name="orig-{{ pk }}-{{ c.name }}" value="{% if val %}on{% endif %}">
+                            <input class="form-check-input" type="checkbox" name="row-{{ pk }}-{{ c.name }}" {% if val %}checked{% endif %}>
+                          {% else %}
+                            <input type="hidden" name="orig-{{ pk }}-{{ c.name }}" value="{{ val if val is not none else '' }}">
+                            <input class="form-control form-control-sm" type="{{ itype }}" name="row-{{ pk }}-{{ c.name }}" value="{{ val if val is not none else '' }}">
+                          {% endif %}
+                        </td>
+                      {% endfor %}
+                    </tr>
+                  {% else %}
+                    <tr><td colspan="100" class="text-muted">No rows.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-floppy me-1"></i>Save changes</button>
+              <a class="btn btn-outline-secondary" href="{{ url_for('table_page', table_name=table_name, tab='view') }}">Cancel</a>
+            </div>
+          </form>
+        {% else %}
+        <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+          <form method="get" action="{{ url_for('table_page', table_name=table_name) }}" class="d-flex gap-2 align-items-end">
+            <input type="hidden" name="tab" value="edit">
+            <div>
+              <label class="form-label mb-0 small text-muted">Select record</label>
+              <div class="d-flex gap-2 align-items-center">
+                <div class="btn-group" role="group" aria-label="Record navigation">
+                  <a class="btn btn-outline-secondary btn-sm {% if not first_pk %}disabled{% endif %}"
+                     href="{{ url_for('table_page', table_name=table_name, tab='edit', record=first_pk) }}"
+                     title="First record">
+                    <i class="bi bi-chevron-bar-left"></i>
+                  </a>
+                  <a class="btn btn-outline-secondary btn-sm {% if not prev_pk %}disabled{% endif %}"
+                     href="{{ url_for('table_page', table_name=table_name, tab='edit', record=prev_pk) }}"
+                     title="Previous record">
+                    <i class="bi bi-chevron-left"></i>
+                  </a>
+                  <a class="btn btn-outline-secondary btn-sm {% if not next_pk %}disabled{% endif %}"
+                     href="{{ url_for('table_page', table_name=table_name, tab='edit', record=next_pk) }}"
+                     title="Next record">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                  <a class="btn btn-outline-secondary btn-sm {% if not last_pk %}disabled{% endif %}"
+                     href="{{ url_for('table_page', table_name=table_name, tab='edit', record=last_pk) }}"
+                     title="Last record">
+                    <i class="bi bi-chevron-bar-right"></i>
+                  </a>
+                </div>
+
+                <select class="form-select form-select-sm" name="record" onchange="this.form.submit()">
+                <option value="">(new)</option>
+                {% for pk in pk_values %}
+                  <option value="{{ pk }}" {% if record_no and (pk|string) == (record_no|string) %}selected{% endif %}>{{ pk }}</option>
+                {% endfor %}
+                </select>
+              </div>
+            </div>
+            <noscript><button class="btn btn-sm btn-outline-secondary" type="submit">Load</button></noscript>
+          </form>
+
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('table_page', table_name=table_name, tab='edit') }}">
+            <i class="bi bi-plus-lg me-1"></i>Add
+          </a>
+
+          {% if record_no %}
+            <form method="post" action="{{ url_for('table_delete', table_name=table_name) }}" onsubmit="return confirm('Delete Record_No={{ record_no }}? This cannot be undone.');">
+              <input type="hidden" name="{{ PK_NAME }}" value="{{ record_no }}">
+              <button class="btn btn-sm btn-outline-danger" type="submit">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </form>
+          {% endif %}
+        </div>
+
+        <form method="post" action="{{ url_for('table_save', table_name=table_name) }}" class="card card-body">
+          <input type="hidden" name="{{ PK_NAME }}" value="{{ record_no or '' }}">
+
+          {% if record_no %}
+            <div class="mb-3">
+              <label class="form-label">{{ PK_NAME }}</label>
+              <input class="form-control" value="{{ record_no }}" disabled>
+              <div class="form-text">Primary key is not editable.</div>
+            </div>
+          {% endif %}
+
+          <div class="row g-3">
+            {% for c in columns if c.name in edit_cols %}
+              {% set itype = input_type_for_pg(c.data_type) %}
+              <div class="col-12 col-lg-6">
+                <label class="form-label">{{ c.label }}</label>
+
+                {% if itype == 'checkbox' %}
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="{{ c.name }}"
+                      {% if record and record.get(c.name) %}checked{% endif %}>
+                  </div>
+                {% else %}
+                  <input class="form-control"
+                         type="{{ itype }}"
+                         name="{{ c.name }}"
+                         value="{{ record.get(c.name) if record else '' }}"
+                         placeholder="">
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">
+              <i class="bi bi-floppy me-1"></i>Save
+            </button>
+            <button class="btn btn-outline-secondary" type="reset">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('table_page', table_name=table_name, tab='view') }}">
+              Cancel
+            </a>
+          </div>
+        </form>
+        {% endif %}
+      {% endif %}
+
+      {% if tab == 'configure' %}
+        <form method="post" action="{{ url_for('table_configure', table_name=table_name) }}">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-muted">
+              Choose which columns appear in <strong>View</strong> and <strong>Edit</strong>.
+            </div>
+            <div class="d-flex flex-wrap gap-2 justify-content-end">
+              <div class="btn-group btn-group-sm" role="group" aria-label="Toggle view columns">
+                <button class="btn btn-outline-secondary" type="button" onclick="setAllChecks('view_cols', true)">All View On</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="setAllChecks('view_cols', false)">All View Off</button>
+              </div>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Toggle edit columns">
+                <button class="btn btn-outline-secondary" type="button" onclick="setAllChecks('edit_cols', true)">All Edit On</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="setAllChecks('edit_cols', false)">All Edit Off</button>
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-check2 me-1"></i>Save</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Column</th>
+                  <th style="width: 110px;">View</th>
+                  <th style="width: 110px;">Edit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in columns if c.name != PK_NAME %}
+                  <tr>
+                    <td>{{ c.label }}</td>
+                    <td>
+                      <input class="form-check-input" type="checkbox" name="view_cols" value="{{ c.name }}"
+                        {% if c.name in view_cols %}checked{% endif %}>
+                    </td>
+                    <td>
+                      <input class="form-check-input" type="checkbox" name="edit_cols" value="{{ c.name }}"
+                        {% if c.name in edit_cols %}checked{% endif %}>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+
+        <script>
+          function setAllChecks(fieldName, checked) {
+            document.querySelectorAll(`input[type="checkbox"][name="${fieldName}"]`).forEach(cb => {
+              cb.checked = checked;
+            });
+          }
+        </script>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

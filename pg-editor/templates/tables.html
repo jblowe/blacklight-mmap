@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row">
+  <div class="col-12 col-lg-8">
+    <h3 class="mb-3">Tables</h3>
+
+    {% if not logged_in %}
+      <div class="alert alert-warning">
+        You are not logged in. Viewing/editing requires Postgres credentials.
+        <a href="{{ url_for('login', next=url_for('tables')) }}" class="alert-link">Login</a>.
+      </div>
+    {% endif %}
+
+    <div class="list-group">
+      {% for t in table_names %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+           href="{{ url_for('table_page', table_name=t) }}">
+          <span class="fw-semibold">{{ t }}</span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
